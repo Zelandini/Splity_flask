@@ -1,18 +1,26 @@
 {% extends 'base.html' %}
-fla
+
 {% block title %}Login | Splity{% endblock %}
 
 {% block content %}
 <h1>Login</h1>
-<form method="post">
-  <label>Username:
-    <input type="text" name="username">
-  </label><br>
-
-  <label>Password:
-    <input type="password" name="password">
-  </label><br>
-
-  <button type="submit">Login</button>
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username(size=32) }}<br>
+        {% for error in form.username.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(size=32) }}<br>
+        {% for error in form.password.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+    <p>{{ form.submit() }}</p>
 </form>
 {% endblock %}

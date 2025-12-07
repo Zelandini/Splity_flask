@@ -17,6 +17,18 @@ class User:
         return self.__name
 
     @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    @property
     def username(self):
         return self.__username
 
@@ -32,13 +44,13 @@ class User:
         return f"<User {self.id}: {self.username}>"
 
 
-
 class Bill:
-    def __init__(self, bill_id: int, user_id: int, description: str, created_date: datetime):
+    def __init__(self, bill_id: int, user_id: int, description: str, created_date: datetime, amount: float):
         self.__bill_id = bill_id
         self.__user_id = user_id
         self.__description = description
-        self.__data = created_date if created_date else datetime.now()
+        self.__amount = amount
+        self.__date = created_date if created_date else datetime.now()
 
     @property
     def id(self):
@@ -54,17 +66,47 @@ class Bill:
 
     @property
     def date(self):
-        return self.__data
+        return self.__date
+
+    @property  # ← FIXED: Added @property
+    def amount(self):
+        return self.__amount
 
     def __repr__(self):
-        return f"<Bill {self.id}: {self.user_id}: {self.description}>"
-
+        return f"<Bill {self.id}: {self.date}: {self.user_id}>"
 
 
 class BillParticipant:
-    def __init__(self, bill_id: int, user_id: int, amount_owed: float, has_paid: bool):
+    def __init__(self, participant_id: int, bill_id: int, user_id: int, amount_owed: float, has_paid: bool):
+        self.__id = participant_id
         self.__bill_id = bill_id
         self.__user_id = user_id
         self.__amount_owed = amount_owed
         self.__has_paid = has_paid
 
+    @property
+    def id(self):
+        return self.__id
+
+    @property
+    def bill_id(self):
+        return self.__bill_id
+
+    @property  # ← FIXED: Changed from id to bill_id
+    def bill_id(self):
+        return self.__bill_id
+
+    @property
+    def user_id(self):
+        return self.__user_id
+
+    @property
+    def amount_owed(self):
+        return self.__amount_owed
+
+    @property
+    def has_paid(self):
+        return self.__has_paid
+
+    def __repr__(self):
+        return f"<BillParticipant bill:{self.bill_id} user:{self.user_id}>"

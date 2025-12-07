@@ -5,12 +5,11 @@
     <title>{% block title %} Splity {% endblock %}</title>
 </head>
 <body>
-  <nav>
-    <a href="{{ url_for('home.index') }}">Home</a> |
-    <a href="{{ url_for('auth.login') }}">Login</a>
-  </nav>
-
-  <hr>
+    <nav>
+        <a href="{{ url_for('home.home') }}">Home</a> |
+        <a href="{{ url_for('authentication.login') }}">Login</a>
+    </nav>
+<hr>
 
   {% block content %}{% endblock %}
 </body>
