@@ -6,20 +6,23 @@ from flask import Flask
 from Splity.adapters.database import init_db
 from config import Config
 from flask_login import LoginManager
-app = Flask(__name__)
-app.config.from_object(Config)
-# from flask_sqlalchemy import SQLAlchemy
+
+
+# Create login manager
 login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    # migrate = Migrate(app, db)
+
+    # Initialise database
     init_db(app)
 
+    # Initialize Flask-Login
     login_manager.init_app(app)
-    login_manager.login_view = "authentication_blueprint.login"
+    login_manager.login_view = "authentication.login"
 
+    # Register blueprints
     from .home import routes
     app.register_blueprint(routes.home_blueprint)
 
@@ -28,6 +31,7 @@ def create_app():
 
     return app
 
+# User loader for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     from Splity.adapters.repository import UserRepository

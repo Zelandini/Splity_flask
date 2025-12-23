@@ -1,13 +1,12 @@
 from Splity.adapters.database import db
-from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM
-from Splity.domainmodel.models import User, Bill, BillParticipant
+from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM
+from Splity.domainmodel.models import User, Bill, BillParticipant, Group
 
 
 class UserRepository:
     """Handles all User database operations"""
 
     def add(self, user: User):
-        """Save a new user to database"""
         user_orm = UserORM(
             name=user.name,
             username=user.username,
@@ -19,11 +18,8 @@ class UserRepository:
         return user_orm.id
 
     def get_by_id(self, user_id: int):
-        """Find user by ID"""
         user_orm = UserORM.query.get(user_id)
-        if user_orm:
-            return self._to_domain(user_orm)
-        return None
+        return self._to_domain(user_orm) if user_orm else None
 
     def get_by_email(self, email: str):
         """Find user by email"""
@@ -33,11 +29,8 @@ class UserRepository:
         return None
 
     def get_by_username(self, username: str):
-        """Find user by username"""
         user_orm = UserORM.query.filter_by(username=username).first()
-        if user_orm:
-            return self._to_domain(user_orm)
-        return None
+        return self._to_domain(user_orm) if user_orm else None
 
     def get_all(self):
         """Get all users"""
@@ -45,21 +38,30 @@ class UserRepository:
         return [self._to_domain(u) for u in users_orm]
 
     def _to_domain(self, user_orm: UserORM) -> User:
-        """Convert ORM object to domain model"""
-        return User(
+        user = User(
             user_id=user_orm.id,
             name=user_orm.name,
             username=user_orm.username,
             email=user_orm.email,
             password=user_orm.password
         )
+        # Bridge the gap: Convert ORM groups to Domain groups
+        for group_orm in user_orm.groups:
+            domain_group = Group(
+                name=group_orm.name,
+                currency=group_orm.currency,
+                creator_id=group_orm.creator_id,
+                group_id=group_orm.id,
+                description=group_orm.description,
+            )
+            user.add_group(domain_group)
+        return user
 
 
 class BillRepository:
     """Handles all Bill database operations"""
 
     def create(self, bill: Bill):
-        """Create a new bill"""
         bill_orm = BillORM(
             user_id=bill.user_id,
             description=bill.description,
@@ -91,7 +93,6 @@ class BillRepository:
         return [self._to_domain(b) for b in bills_orm]
 
     def _to_domain(self, bill_orm: BillORM) -> Bill:
-        """Convert ORM object to domain model"""
         return Bill(
             bill_id=bill_orm.id,
             user_id=bill_orm.user_id,
@@ -139,10 +140,54 @@ class BillParticipantRepository:
         return False
 
     def _to_domain(self, participant_orm: BillParticipantORM) -> BillParticipant:
-        """Convert ORM object to domain model"""
         return BillParticipant(
+            participant_id=participant_orm.id,
             bill_id=participant_orm.bill_id,
             user_id=participant_orm.user_id,
             amount_owed=participant_orm.amount_owed,
             has_paid=participant_orm.has_paid
+        )
+
+
+class GroupRepository:
+    def add(self, group: Group):
+        group_orm = GroupORM(
+            name=group.name,
+            description=group.description,  # FIX: Save the description
+            currency=group.currency,
+            invite_code=group.invite_code,
+            creator_id=group.creator_id
+        )
+        # Add the creator as the first member automatically
+        creator_orm = UserORM.query.get(group.creator_id)
+        if creator_orm:
+            group_orm.members.append(creator_orm)
+
+        db.session.add(group_orm)
+        db.session.commit()
+        return group_orm.id
+
+    def join_by_code(self, user_id: int, invite_code: str):
+        group_orm = GroupORM.query.filter_by(invite_code=invite_code).first()
+        user_orm = UserORM.query.get(user_id)
+        if group_orm and user_orm:
+            if user_orm not in group_orm.members:
+                group_orm.members.append(user_orm)
+                db.session.commit()
+                return True
+        return False
+
+    def get_by_name_and_creator(self, name: str, creator_id: int):
+        """Finds if this specific user already has a group with this name."""
+        group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
+        return self._to_domain(group_orm) if group_orm else None
+
+    def _to_domain(self, group_orm: GroupORM) -> Group:
+        return Group(
+            group_id=group_orm.id,
+            name=group_orm.name,
+            description=group_orm.description, # FIX: Pass description
+            currency=group_orm.currency,
+            creator_id=group_orm.creator_id,
+            invite_code=group_orm.invite_code   # FIX: Pass the code from DB
         )

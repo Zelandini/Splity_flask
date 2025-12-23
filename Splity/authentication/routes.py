@@ -1,23 +1,48 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired
+from flask_login import login_user, logout_user, current_user
 
-authentication_blueprint = Blueprint("authentication", __name__, template_folder="../templates")
+from Splity.forms.forms import LoginForm, RegistrationForm
+from Splity.services import authentication_services
 
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+authentication_blueprint = Blueprint("authentication", __name__)
 
+@authentication_blueprint.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home.home'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        try:
+            authentication_services.add_user(name=form.name.data,
+                                             username=form.username.data,
+                                             email=form.email.data,
+                                             password=form.password.data)
+            flash('Registration successful! Please login.', 'success')
+            return redirect(url_for('authentication.login'))
+        except authentication_services.AuthenticationException as e:
+            flash(str(e), 'danger')
+    return render_template('register.html', form=form)
 
 
 @authentication_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home.home'))
     form = LoginForm()
     if form.validate_on_submit():
-        flash('Login requested for user {}, remember_me={}'.format(
-            form.username.data, form.remember_me.data))
-        return redirect(url_for('index'))
+        try:
+            user = authentication_services.authenticate_user(username=form.username.data,
+                                                             password=form.password.data)
+            login_user(user)
+            flash('Login successful!', 'success')
+            return redirect(url_for('home.home'))
+        except authentication_services.AuthenticationException:
+            flash('Invalid username or password', 'danger')
     return render_template('authentication.html', form=form)
+
+
+@authentication_blueprint.route('/logout')
+def logout():
+    logout_user()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('home.home'))

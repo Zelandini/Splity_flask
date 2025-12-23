@@ -1,6 +1,21 @@
 from Splity.adapters.database import db
 from datetime import datetime
 
+user_groups = db.Table('user_groups',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('group_id', db.Integer, db.ForeignKey('groups.id'), primary_key=True)
+)
+
+class GroupORM(db.Model):
+    __tablename__ = 'groups'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
+    currency = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Fixed
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    invite_code = db.Column(db.String(10), unique=True, nullable=False)
+    members = db.relationship("UserORM", secondary=user_groups, backref="groups")
 
 class UserORM(db.Model):
     __tablename__ = 'users'
@@ -18,8 +33,9 @@ class BillORM(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     description = db.Column(db.String(200), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Fixed
     amount = db.Column(db.Float, nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=True)
 
 
 class BillParticipantORM(db.Model):

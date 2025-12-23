@@ -3,6 +3,45 @@
 {% block title %}Home | Splity{% endblock %}
 
 {% block content %}
-<h1>Welcome to Splity</h1>
-<p>Your simple expense-sharing app.</p>
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <h1>Welcome to Splity, {{ current_user.name }}!</h1>
+    <p>Your simple expense-sharing app.</p>
+
+    <hr>
+
+    <div class="actions">
+        <a href="{{ url_for('home.create_group') }}" class="btn btn-success">
+            Create New Group
+        </a>
+
+        <p>or</p>
+
+        <a href="#" class="btn btn-secondary">
+            Join a Group
+        </a>
+    </div>
+
+    <hr>
+
+    <h3>Your Groups</h3>
+    {% if current_user.groups %}
+        <ul>
+        {% for group in current_user.groups %}
+            <li><strong>{{ group.name }}</strong> (Code: {{ group.invite_code }})</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You haven't joined any groups yet.</p>
+    {% endif %}
+</div>
 {% endblock %}
