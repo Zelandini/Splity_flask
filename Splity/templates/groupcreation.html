@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %} Create Group {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Create a New Group</h1>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(class="form-control", size=32) }}<br>
+            {% for error in form.name.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control", rows=3) }}<br>
+            {% for error in form.description.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.currency.label }}<br>
+            {{ form.currency(class="form-control") }}<br>
+            {% for error in form.currency.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock %}
+
