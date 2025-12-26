@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }} | Splity{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <h1>{{ group.name }}</h1>
+    <p><strong>Description:</strong> {{ group.description }}</p>
+    <p><strong>Currency:</strong> {{ group.currency }}</p>
+    <p><strong>Invite Code:</strong> <code style="font-size: 1.2em; background-color: #f0f0f0; padding: 5px;">{{ group.invite_code }}</code></p>
+
+    <hr>
+
+    <h3>Group Members ({{ members|length }})</h3>
+    {% if members %}
+        <ul>
+        {% for member in members %}
+            <li>
+                {{ member.name }} (@{{ member.username }})
+                {% if member.id == group.creator_id %}
+                    <span style="color: green;">[Creator]</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No members in this group yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Bills</h3>
+    <p><em>Bill functionality coming soon...</em></p>
+    <!-- Future: Add bills list here -->
+
+    <hr>
+
+    <div class="actions">
+        <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Back to Home</a>
+        <!-- Future: Add "Create Bill" button here -->
+    </div>
+</div>
+{% endblock %}

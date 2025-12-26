@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %} Join Group {% endblock %}
+
+{% block content %}
+<div class="container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <h1>Join a Group</h1>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.invite_code.label }}<br>
+            {{ form.invite_code(class="form-control", size=32) }}<br>
+            {% for error in form.invite_code.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock %}
+
