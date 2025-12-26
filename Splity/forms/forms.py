@@ -1,3 +1,5 @@
+# /Splity_flask/Splity/forms/forms.py
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
@@ -25,3 +27,8 @@ class GroupCreationForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired()])
     currency = SelectField('Currency', choices=[], validators=[DataRequired()])
     submit = SubmitField('Create Group')
+
+
+class JoinGroupForm(FlaskForm):
+    invite_code = StringField('Invite Code', validators=[DataRequired(), Length(min=1, max=10)])
+    submit = SubmitField('Join Group')

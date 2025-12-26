@@ -1,5 +1,7 @@
+# /Splity_flask/Splity/adapters/repository.py
+
 from Splity.adapters.database import db
-from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM
+from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM, user_groups
 from Splity.domainmodel.models import User, Bill, BillParticipant, Group
 
 
@@ -18,7 +20,7 @@ class UserRepository:
         return user_orm.id
 
     def get_by_id(self, user_id: int):
-        user_orm = UserORM.query.get(user_id)
+        user_orm = db.session.get(UserORM, user_id)
         return self._to_domain(user_orm) if user_orm else None
 
     def get_by_email(self, email: str):
@@ -74,7 +76,7 @@ class BillRepository:
 
     def get_by_id(self, bill_id: int):
         """Get bill by ID"""
-        bill_orm = BillORM.query.get(bill_id)
+        bill_orm = db.session.get(BillORM, bill_id)
         if bill_orm:
             return self._to_domain(bill_orm)
         return None
@@ -159,7 +161,7 @@ class GroupRepository:
             creator_id=group.creator_id
         )
         # Add the creator as the first member automatically
-        creator_orm = UserORM.query.get(group.creator_id)
+        creator_orm = db.session.get(UserORM, group.creator_id)
         if creator_orm:
             group_orm.members.append(creator_orm)
 
@@ -169,7 +171,7 @@ class GroupRepository:
 
     def join_by_code(self, user_id: int, invite_code: str):
         group_orm = GroupORM.query.filter_by(invite_code=invite_code).first()
-        user_orm = UserORM.query.get(user_id)
+        user_orm = db.session.get(UserORM, user_id)
         if group_orm and user_orm:
             if user_orm not in group_orm.members:
                 group_orm.members.append(user_orm)
@@ -181,6 +183,43 @@ class GroupRepository:
         """Finds if this specific user already has a group with this name."""
         group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
         return self._to_domain(group_orm) if group_orm else None
+
+    def get_by_and_membership(self, name: str, creator_id: int):
+        group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
+        return self._to_domain(group_orm) if group_orm else None
+
+    def get_by_invite_code(self, invite_code: str):
+        group_orm = GroupORM.query.filter_by(invite_code=invite_code.upper()).first()
+        return self._to_domain(group_orm) if group_orm else None
+
+    def get_user_groups(self, user_id: int):
+        user_orm = db.session.get(UserORM, user_id)
+        if user_orm:
+            return [self._to_domain(group) for group in user_orm.groups]
+        return []
+
+
+    def get_by_id(self, group_id: int):
+        group_orm = db.session.get(GroupORM, group_id)
+        return self._to_domain(group_orm) if group_orm else None
+
+    def get_group_members(self, group_id: int):
+        group_orm = db.session.get(GroupORM, group_id)
+        if not group_orm:
+            return []
+
+        members = []
+        for user_orm in group_orm.members:
+            user = User(
+                user_id=user_orm.id,
+                name=user_orm.name,
+                username=user_orm.username,
+                email=user_orm.email,
+                password=user_orm.password
+            )
+            members.append(user)
+
+        return members
 
     def _to_domain(self, group_orm: GroupORM) -> Group:
         return Group(

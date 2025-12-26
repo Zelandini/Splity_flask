@@ -14,34 +14,45 @@
       {% endif %}
     {% endwith %}
 
-    <h1>Welcome to Splity, {{ current_user.name }}!</h1>
-    <p>Your simple expense-sharing app.</p>
+    {% if current_user.is_authenticated %}
+        <h1>Welcome to Splity, {{ current_user.name }}!</h1>
+        <p>Your simple expense-sharing app.</p>
 
-    <hr>
+        <hr>
 
-    <div class="actions">
-        <a href="{{ url_for('home.create_group') }}" class="btn btn-success">
-            Create New Group
-        </a>
+        <div class="actions">
+            <a href="{{ url_for('home.create_group') }}" class="btn btn-success">
+                Create New Group
+            </a>
 
-        <p>or</p>
+            <span style="margin: 0 10px;">or</span>
 
-        <a href="#" class="btn btn-secondary">
-            Join a Group
-        </a>
-    </div>
+            <a href="{{ url_for('home.join_group') }}" class="btn btn-secondary">
+                Join a Group
+            </a>
+        </div>
 
-    <hr>
+        <hr>
 
-    <h3>Your Groups</h3>
-    {% if current_user.groups %}
-        <ul>
-        {% for group in current_user.groups %}
-            <li><strong>{{ group.name }}</strong> (Code: {{ group.invite_code }})</li>
-        {% endfor %}
-        </ul>
+        <h3>Your Groups</h3>
+        {% if groups %}
+            <ul style="list-style-type: none; padding: 0;">
+            {% for group in groups %}
+                <li style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <strong>{{ group.name }}</strong><br>
+                    <small>{{ group.description }}</small><br>
+                    <small>Currency: {{ group.currency }} | Invite Code: <code>{{ group.invite_code }}</code></small><br>
+                    <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-primary" style="margin-top: 5px;">View Details</a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>You haven't joined any groups yet. Create one or join using an invite code!</p>
+        {% endif %}
     {% else %}
-        <p>You haven't joined any groups yet.</p>
+        <h1>Welcome to Splity!</h1>
+        <p>Your simple expense-sharing app.</p>
+        <p>Please <a href="{{ url_for('authentication.login') }}">login</a> or <a href="{{ url_for('authentication.register') }}">register</a> to get started.</p>
     {% endif %}
 </div>
 {% endblock %}

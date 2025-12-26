@@ -1,5 +1,7 @@
+# /Splity_flask/Splity/adapters/orm.py
+
 from Splity.adapters.database import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 user_groups = db.Table('user_groups',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -12,7 +14,7 @@ class GroupORM(db.Model):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(200), nullable=False)
     currency = db.Column(db.String(200), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Fixed
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     invite_code = db.Column(db.String(10), unique=True, nullable=False)
     members = db.relationship("UserORM", secondary=user_groups, backref="groups")
@@ -33,7 +35,7 @@ class BillORM(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     description = db.Column(db.String(200), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Fixed
+    date = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     amount = db.Column(db.Float, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=True)
 

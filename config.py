@@ -1,3 +1,5 @@
+# /Splity_flask/config.py
+
 import os
 
 class Config:

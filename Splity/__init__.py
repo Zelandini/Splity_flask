@@ -1,4 +1,4 @@
-"""Initilise the App"""
+# /Splity_flask/Splity/__init__.py
 
 from flask import Flask
 # from flask_migrate import Migrate

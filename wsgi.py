@@ -1,3 +1,4 @@
+# /Splity_flask/wsgi.py
 from Splity import create_app
 
 application = create_app()

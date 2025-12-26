@@ -1,3 +1,5 @@
+# /Splity_flask/Splity/domainmodel/models.py
+
 import secrets
 from datetime import datetime
 from typing import Optional
@@ -103,13 +105,14 @@ class BillParticipant:
 
 
 class Group:
-    def __init__(self, name: str, description: str ,currency: str, creator_id: Optional[int] = None, group_id: int = None):
+    def __init__(self, name: str, description: str ,currency: str, creator_id: Optional[int] = None,
+                 group_id: int = None, invite_code: str = None):
         self.__id = group_id
         self.__name = name
         self.__description = description
         self.__creator_id = creator_id
         self.__currency = currency
-        self.__invite_code = secrets.token_hex(3).upper()
+        self.__invite_code = invite_code if invite_code else secrets.token_hex(3).upper()
 
     @property
     def id(self): return self.__id

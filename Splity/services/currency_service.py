@@ -1,3 +1,5 @@
+# /Splity_flask/Splity/services/currency_services.py
+
 import requests
 
 def get_currency() -> list[tuple]:
