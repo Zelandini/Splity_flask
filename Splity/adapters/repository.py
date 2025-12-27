@@ -169,6 +169,7 @@ class GroupRepository:
         db.session.commit()
         return group_orm.id
 
+
     def join_by_code(self, user_id: int, invite_code: str):
         group_orm = GroupORM.query.filter_by(invite_code=invite_code).first()
         user_orm = db.session.get(UserORM, user_id)
@@ -184,7 +185,7 @@ class GroupRepository:
         group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
         return self._to_domain(group_orm) if group_orm else None
 
-    def get_by_and_membership(self, name: str, creator_id: int):
+    def get_by_name_and_membership(self, name: str, creator_id: int):
         group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
         return self._to_domain(group_orm) if group_orm else None
 
@@ -220,6 +221,47 @@ class GroupRepository:
             members.append(user)
 
         return members
+
+
+    def edit_group_name(self, group_id: int, new_name: str):
+        group_orm = db.session.get(GroupORM, group_id).first()
+        if group_orm:
+            group_orm.name = new_name
+            db.session.commit()
+            return True
+        return False
+
+
+    def edit_group_description(self, group_id: int, new_description: str):
+        group_orm = db.session.get(GroupORM, group_id)
+        if group_orm:
+            group_orm.description = new_description
+            db.session.commit()
+            return True
+        return False
+
+    def remove_member(self, group_id: int, user_id: int):
+        group_orm = db.session.get(GroupORM, group_id)
+        user_orm = db.session.get(UserORM, user_id)
+        if group_orm and user_orm:
+            if user_orm in group_orm.members:
+                group_orm.members.remove(user_orm)
+                db.session.commit()
+                return True
+        return False
+
+
+    def delete_group(self, group_id: int):
+        group_orm = db.session.get(GroupORM, group_id)
+        if group_orm:
+            db.session.delete(group_orm)
+            db.session.commit()
+            return True
+        return False
+
+
+
+
 
     def _to_domain(self, group_orm: GroupORM) -> Group:
         return Group(
