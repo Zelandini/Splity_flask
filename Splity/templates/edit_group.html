@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %} Edit Group {% endblock %}
+
+{% block content %}
+<div class="container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+    <h1>Edit Group</h1>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(class="form-control", size=32) }}<br>
+            {% for error in form.name.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control", rows=3) }}<br>
+            {% for error in form.description.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
+    </form>
+<h2>Remove Members</h2>
+{% if members %}
+        <ul>
+        {% for member in members %}
+            <li>
+                {% if member.id == group.creator_id %}
+                    {{ member.name }} (@{{ member.username }})
+                    <span style="color: green;">[Creator]</span>
+                {% else %}
+                    {{ member.name }} (@{{ member.username }})
+                    <span><a href="" class="btn btn-secondary">Delete</a></span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No members in this group yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+

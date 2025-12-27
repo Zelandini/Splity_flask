@@ -46,6 +46,18 @@ class User:
     def add_group(self, group):
         self.__groups.append(group)
 
+    def set_name(self, name: str):
+        self.__name = name
+
+    def set_username(self, username: str):
+        self.__username = username
+
+    def set_email(self, email: str):
+        self.__email = email
+
+    def set_password(self, password: str):
+        self.__password = password
+
     def __repr__(self):
         return f"<User {self.id}: {self.username}>"
 
@@ -131,3 +143,11 @@ class Group:
 
     @property
     def description(self): return self.__description
+
+    @name.setter
+    def name(self, name: str):
+        self.__name = name
+
+    @description.setter
+    def description(self, description: str):
+        self.__description = description

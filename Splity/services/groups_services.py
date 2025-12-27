@@ -63,10 +63,33 @@ def join_group(invite_code: str, user_id: int) -> Group:
 # def delete_group(creator_id: int, group_id: int) -> :
 #     repo = GroupRepository()
 
-# def edit_group(name: str, description: str, currency: str, creator_id: int) -> Group:
-#     repo = GroupRepository()
-#     existing_group = repo.get_by_and_membership(name, creator_id)
-#     if existing_group:
+def edit_group(name: str, description: str, group_id: int, creator_id: int) -> Group:
+    repo = GroupRepository()
+    current_group = repo.get_by_id(group_id)
+    existing_group = repo.get_by_name_and_membership(name, creator_id)
+    if current_group.creator_id != creator_id:
+        raise GroupServiceException("You are not allowed to edit this group.")
+    if not name or not name.strip():
+        raise GroupServiceException("Group name cannot be empty.")
+    if not description or not description.strip():
+        raise GroupServiceException("Group description cannot be empty.")
+    if existing_group:
+        raise GroupServiceException("Group name already exists.")
+    try:
+        current_group.name = name
+        current_group.description = description
+        repo.edit_group_name(group_id, name)
+        repo.edit_group_description(group_id, description)
+        return current_group
+    except Exception as e:
+        raise GroupServiceException(f"Failed to edit group: {str(e)}")
+
+
+def get_group(group_id: int) -> Group:
+    repo = GroupRepository()
+    group = repo.get_by_id(group_id)
+    return group
+
 
 
 

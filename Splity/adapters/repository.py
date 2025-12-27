@@ -224,7 +224,7 @@ class GroupRepository:
 
 
     def edit_group_name(self, group_id: int, new_name: str):
-        group_orm = db.session.get(GroupORM, group_id).first()
+        group_orm = db.session.get(GroupORM, group_id)
         if group_orm:
             group_orm.name = new_name
             db.session.commit()
@@ -258,9 +258,6 @@ class GroupRepository:
             db.session.commit()
             return True
         return False
-
-
-
 
 
     def _to_domain(self, group_orm: GroupORM) -> Group:

@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, redirect, flash, url_for
 from flask_login import login_required, current_user
 
 from Splity.adapters.repository import GroupRepository
-from Splity.forms.forms import GroupCreationForm, JoinGroupForm
+from Splity.forms.forms import GroupCreationForm, JoinGroupForm, GroupEditForm
 from Splity.services import groups_services, currency_service
 
 home_blueprint = Blueprint("home", __name__)
@@ -80,3 +80,21 @@ def group_details(group_id):
     except groups_services.GroupServiceException as e:
         flash(str(e), "danger")
         return redirect(url_for('home.home'))
+
+
+@home_blueprint.route('/group/<int:group_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_group(group_id):
+    group, members = groups_services.get_group_details(group_id, current_user.id)
+    form = GroupEditForm(name=group.name, description=group.description)
+    if current_user.id != group.creator_id:
+        flash("You cannot edit this group", "danger")
+        return redirect(url_for('home.group_details', group_id=group.id))
+    if form.validate_on_submit():
+        try:
+            group = groups_services.edit_group(name=form.name.data, description=form.description.data, group_id=group_id, creator_id=current_user.id)
+            flash(f"Successfully edited Group '{group.name}'", "success")
+            return redirect(url_for('home.group_details', group_id=group.id))
+        except groups_services.GroupServiceException as e:
+            flash(str(e), "danger")
+    return render_template('edit_group.html', form=form, members=members, group=group)

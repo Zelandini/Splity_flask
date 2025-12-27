@@ -21,3 +21,10 @@ def test_create_group_duplicate_name_fails(app):
     with pytest.raises(groups_services.GroupServiceException) as exc:
         groups_services.create_group("Ski Trip", "Duplicate", "USD", user.id)
     assert "already have a group named" in str(exc.value)
+
+
+def test_edit_group(app):
+    authentication_services.add_user("Bob", "bob", "bob@test.com", "pass")
+    user = UserRepository().get_by_username("bob")
+
+    groups_services.edit_group("Ski Trip", "Fun", user.id)

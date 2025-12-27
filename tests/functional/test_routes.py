@@ -382,3 +382,62 @@ def test_user_cannot_create_duplicate_group_they_already_created(authenticated_c
     my_groups = [g for g in created_groups if g.name == "My Group"]
 
     assert len(my_groups) == 1
+
+
+def test_edit_group_success(authenticated_client, app):
+    # 1. Arrange: Create a group first
+    authenticated_client.post('/create_group', data={
+        "name": "Original Name", "description": "Old", "currency": "USD"
+    }, follow_redirects=True)
+
+    with app.app_context():
+        from Splity.adapters.repository import GroupRepository
+        repo = GroupRepository()
+        # Get the group we just made
+        group = repo.get_all()[0]
+        group_id = group.id
+
+    # 2. Act: Send updated data to the edit route
+    response = authenticated_client.post(f'/group/{group_id}/edit', data={
+        "name": "Updated Name",
+        "description": "New Description",
+    }, follow_redirects=True)
+
+    # 3. Assert: Check redirection and database update
+    assert response.status_code == 200
+    assert "Updated Name" in response.get_data(as_text=True)
+
+    with app.app_context():
+        updated_group = repo.get_by_id(group_id)
+        assert updated_group.name == "Updated Name"
+        assert updated_group.description == "New Description"
+
+
+def test_non_creator_cannot_edit_group(app, authenticated_client):
+    # 1. Arrange: 'testuser' creates a group
+    authenticated_client.post('/create_group', data={
+        "name": "Test Group", "description": "Owner only", "currency": "USD"
+    })
+
+    with app.app_context():
+        from Splity.adapters.repository import GroupRepository
+        group = GroupRepository().get_all()[0]
+        group_id = group.id
+
+    # 2. Arrange: Switch to a different user
+    authenticated_client.get('/logout', follow_redirects=True)
+    # (Assuming you have a helper to register/login a second user)
+    # login_as_user(authenticated_client, "otheruser")
+
+    # 3. Act: Try to edit 'testuser's group
+    response = authenticated_client.post(f'/group/{group_id}/edit', data={
+        "name": "Hacked Name"
+    }, follow_redirects=True)
+
+    # 4. Assert: Should redirect with an error message
+    assert "You do not have permission" in response.get_data(as_text=True)
+
+    # Double check the DB wasn't changed
+    with app.app_context():
+        original_group = GroupRepository().get_by_id(group_id)
+        assert original_group.name == "Test Group"

@@ -29,6 +29,12 @@ class GroupCreationForm(FlaskForm):
     submit = SubmitField('Create Group')
 
 
+class GroupEditForm(FlaskForm):
+    name = StringField('New Name', validators=[DataRequired(), Length(min=2, max=50)])
+    description = TextAreaField('New Description', validators=[DataRequired()])
+    submit = SubmitField('Change Details')
+
+
 class JoinGroupForm(FlaskForm):
     invite_code = StringField('Invite Code', validators=[DataRequired(), Length(min=1, max=10)])
     submit = SubmitField('Join Group')

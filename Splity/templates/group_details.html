@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ group.name }} | Splity{% endblock %}
+{% block title %}{{ group.name }}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -18,7 +18,12 @@
     <p><strong>Description:</strong> {{ group.description }}</p>
     <p><strong>Currency:</strong> {{ group.currency }}</p>
     <p><strong>Invite Code:</strong> <code style="font-size: 1.2em; background-color: #f0f0f0; padding: 5px;">{{ group.invite_code }}</code></p>
-
+    {% if current_user.id == group.creator_id %}
+    <a href="{{ url_for('home.edit_group', group_id=group.id) }}" class="btn btn-secondary">Edit Group</a>
+    {% else %}
+    <a href="" class="btn btn-secondary">Edit Group</a>
+    <span>(Only creator can edit)</span>
+    {% endif %}
     <hr>
 
     <h3>Group Members ({{ members|length }})</h3>
