@@ -185,8 +185,16 @@ class GroupRepository:
         group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
         return self._to_domain(group_orm) if group_orm else None
 
-    def get_by_name_and_membership(self, name: str, creator_id: int):
-        group_orm = GroupORM.query.filter_by(name=name, creator_id=creator_id).first()
+    def get_by_name_and_membership(self, name: str, user_id: int):
+        # We join GroupORM to its 'members' relationship
+        group_orm = db.session.query(GroupORM) \
+            .join(GroupORM.members) \
+            .filter(
+            GroupORM.name == name,
+            UserORM.id == user_id
+        ) \
+            .first()
+
         return self._to_domain(group_orm) if group_orm else None
 
     def get_by_invite_code(self, invite_code: str):

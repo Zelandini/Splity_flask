@@ -1,6 +1,8 @@
 # /Splity_flask/Splity/services/groups_services.py
+from flask_login import current_user
+
 from Splity.adapters.orm import user_groups
-from Splity.adapters.repository import GroupRepository
+from Splity.adapters.repository import GroupRepository, UserRepository
 from Splity.domainmodel.models import Group
 
 class GroupServiceException(Exception):
@@ -51,17 +53,52 @@ def join_group(invite_code: str, user_id: int) -> Group:
         raise GroupServiceException(f"Failed to join group: {str(e)}")
 
 
-# def leave_group(group_id, user_id: int):
-#     repo = GroupRepository()
-#     existing_group = repo.get_by_name_and_membership(group_id, user_id)
-#     if not existing_group:
-#         raise GroupServiceException("You are not in group.")
-#     try:
-#         remove_member = repo.remove_member(existing_group, user_id)
+def leave_from_group(group_id, user_id: int):
+    repo = GroupRepository()
+    group = repo.get_by_id(group_id)
+    existing_group = repo.get_by_name_and_membership(group.name, user_id)
+    if not existing_group:
+        raise GroupServiceException("You are not in group.")
+    if user_id == existing_group.creator_id:
+        raise GroupServiceException("You are not allowed to leave the group.")
+    try:
+        member_removed = repo.remove_member(group_id, user_id)
+        return member_removed, existing_group
+    except Exception as e:
+        raise GroupServiceException(f"Failed to leave group: {str(e)}")
 
 
-# def delete_group(creator_id: int, group_id: int) -> :
-#     repo = GroupRepository()
+def remove_user(group_id: int, user_id: int, requester_id: int):
+    repo = GroupRepository()
+    user = UserRepository()
+    group = repo.get_by_id(group_id)
+    user_to_remove = user.get_by_id(user_id)  # Ensure your repo has this
+    if not group or not user_to_remove:
+        raise GroupServiceException("Group or User not found.")
+    if group.creator_id != requester_id:
+        raise GroupServiceException("Only the creator can remove members.")
+    if user_id == group.creator_id:
+        raise GroupServiceException("You cannot remove yourself from the group.")
+    success = repo.remove_member(group_id, user_id)
+    if not success:
+        raise GroupServiceException("User is not a member of this group.")
+    return user_to_remove  # Return the user so we can flash their name
+
+def delete_group(group_id: int, user_id: int):
+    repo = GroupRepository()
+    group = repo.get_by_id(group_id)
+    if not group:
+        raise GroupServiceException("Group not found.")
+    if user_id != group.creator_id:
+        raise GroupServiceException("Not authorised to delete this group.")
+    try:
+        success = repo.delete_group(group_id)
+        if not success:
+            raise GroupServiceException("Group was not deleted.")
+        return group
+    except Exception as e:
+        raise GroupServiceException(f"Failed to delete group: {str(e)}")
+
 
 def edit_group(name: str, description: str, group_id: int, creator_id: int) -> Group:
     repo = GroupRepository()
@@ -89,6 +126,7 @@ def get_group(group_id: int) -> Group:
     repo = GroupRepository()
     group = repo.get_by_id(group_id)
     return group
+
 
 
 

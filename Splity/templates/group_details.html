@@ -53,6 +53,11 @@
     <div class="actions">
         <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Back to Home</a>
         <!-- Future: Add "Create Bill" button here -->
+        {% if current_user.id == group.creator_id %}
+            <a href="{{ url_for('home.delete_group', group_id=group.id, user_id=current_user.id) }}" class="btn btn-secondary">Delete Group</a>
+        {% else %}
+            <a href="{{ url_for('home.leave_group', group_id=group.id, user_id=current_user.id) }}" class="btn btn-secondary">Leave Group</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

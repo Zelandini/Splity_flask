@@ -56,7 +56,6 @@ def join_group():
 
     if form.validate_on_submit():
         try:
-            # FIX: Correct parameter order - (user_id, invite_code)
             group = groups_services.join_group(
                 user_id=current_user.id,
                 invite_code=form.invite_code.data.strip().upper()
@@ -87,14 +86,52 @@ def group_details(group_id):
 def edit_group(group_id):
     group, members = groups_services.get_group_details(group_id, current_user.id)
     form = GroupEditForm(name=group.name, description=group.description)
-    if current_user.id != group.creator_id:
-        flash("You cannot edit this group", "danger")
-        return redirect(url_for('home.group_details', group_id=group.id))
+    # if current_user.id != group.creator_id:
+    #     flash("You cannot edit this group", "danger")
+    #     return redirect(url_for('home.group_details', group_id=group.id))
     if form.validate_on_submit():
         try:
             group = groups_services.edit_group(name=form.name.data, description=form.description.data, group_id=group_id, creator_id=current_user.id)
             flash(f"Successfully edited Group '{group.name}'", "success")
-            return redirect(url_for('home.group_details', group_id=group.id))
+            return redirect(url_for('home.group_details', group_id=group_id))
         except groups_services.GroupServiceException as e:
             flash(str(e), "danger")
+            return redirect(url_for('home.group_details', group_id=group_id))
     return render_template('edit_group.html', form=form, members=members, group=group)
+
+
+@home_blueprint.route('/group/<int:group_id>/remove_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def remove_user(group_id, user_id):
+    try:
+        member_remove = groups_services.remove_user(group_id, user_id, current_user.id)
+        flash(f"Successfully removed '{member_remove.name}'", "success")
+        return redirect(url_for('home.group_details', group_id=group_id))
+    except groups_services.GroupServiceException as e:
+        flash(str(e), "danger")
+
+
+@home_blueprint.route('/group/<int:group_id>/leave', methods=['GET', 'POST'])
+@login_required
+def leave_group(group_id):
+    try:
+        user, group = groups_services.leave_from_group(group_id, current_user.id)
+        flash(f"Successfully leave Group '{group.name}'", "success")
+        return redirect(url_for('home.home'))
+    except groups_services.GroupServiceException as e:
+        flash(str(e), "danger")
+        return redirect(url_for('home.group_details', group_id=group_id))
+
+
+@home_blueprint.route('/group/<int:group_id>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_group(group_id):
+    try:
+        group = groups_services.delete_group(group_id, current_user.id)
+        flash(f"Successfully deleted Group '{group.name}'", "success")
+        return redirect(url_for('home.home'))
+    except groups_services.GroupServiceException as e:
+        flash(str(e), "danger")
+        return redirect(url_for('home.group_details', group_id=group_id))
+
+
