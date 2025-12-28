@@ -1,10 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block title %} Create Bill {% endblock %}
+
+{% block content %}
+<div class="container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+    <h1>Add bill</h1>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control", rows=3) }}<br>
+            {% for error in form.description.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.owe_members.label }}<br>
+            {{ form.owe_members(class="form-control") }}<br>
+            {% for error in form.owe_members.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock %}
+

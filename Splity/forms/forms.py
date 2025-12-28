@@ -1,7 +1,7 @@
 # /Splity_flask/Splity/forms/forms.py
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, SelectMultipleField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 
@@ -38,3 +38,9 @@ class GroupEditForm(FlaskForm):
 class JoinGroupForm(FlaskForm):
     invite_code = StringField('Invite Code', validators=[DataRequired(), Length(min=1, max=10)])
     submit = SubmitField('Join Group')
+
+
+class CreateBillForm(FlaskForm):
+    description = StringField('Description', validators=[DataRequired(), Length(min=2, max=50)])
+    owe_members = SelectMultipleField('Owe Member', choices=[], validators=[DataRequired()])
+    submit = SubmitField('Create Bill')

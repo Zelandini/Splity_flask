@@ -23,7 +23,7 @@ def register():
             return redirect(url_for('authentication.login'))
         except authentication_services.AuthenticationException as e:
             flash(str(e), 'danger')
-    return render_template('register.html', form=form)
+    return render_template('authentication/register.html', form=form)
 
 
 @authentication_blueprint.route('/login', methods=['GET', 'POST'])
@@ -40,7 +40,7 @@ def login():
             return redirect(url_for('home.home'))
         except authentication_services.AuthenticationException:
             flash('Invalid username or password', 'danger')
-    return render_template('authentication.html', form=form)
+    return render_template('authentication/authentication.html', form=form)
 
 
 @authentication_blueprint.route('/logout')

@@ -1,8 +1,6 @@
 # /Splity_flask/Splity/__init__.py
 
 from flask import Flask
-# from flask_migrate import Migrate
-
 from Splity.adapters.database import init_db
 from config import Config
 from flask_login import LoginManager
@@ -28,6 +26,9 @@ def create_app():
 
     from .authentication import routes
     app.register_blueprint(routes.authentication_blueprint)
+
+    from .bills import routes
+    app.register_blueprint(routes.bills_blueprint)
 
     return app
 

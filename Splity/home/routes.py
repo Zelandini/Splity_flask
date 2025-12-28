@@ -3,7 +3,6 @@
 from flask import Blueprint, render_template, redirect, flash, url_for
 from flask_login import login_required, current_user
 
-from Splity.adapters.repository import GroupRepository
 from Splity.forms.forms import GroupCreationForm, JoinGroupForm, GroupEditForm
 from Splity.services import groups_services, currency_service
 
@@ -15,8 +14,7 @@ def home():
     """Home page - shows user's groups"""
     groups = []
     if current_user.is_authenticated:
-        group_repo = GroupRepository()
-        groups = group_repo.get_user_groups(current_user.id)
+        groups = groups_services.get_user_groups(current_user.id)
     return render_template('home.html', groups=groups)
 
 
@@ -45,7 +43,7 @@ def create_group():
         except Exception as e:
             flash(f"An unexpected error occurred: {str(e)}", "danger")
 
-    return render_template('group_creation.html', form=form)
+    return render_template('group/group_creation.html', form=form)
 
 
 @home_blueprint.route('/join_group', methods=['GET', 'POST'])
@@ -67,7 +65,7 @@ def join_group():
         except Exception as e:
             flash(f"An unexpected error occurred: {str(e)}", "danger")
 
-    return render_template('join_group.html', form=form)
+    return render_template('group/join_group.html', form=form)
 
 
 @home_blueprint.route('/group/<int:group_id>')
@@ -75,7 +73,7 @@ def join_group():
 def group_details(group_id):
     try:
         group, members = groups_services.get_group_details(group_id, current_user.id)
-        return render_template('group_details.html', group=group, members=members)
+        return render_template('group/group_details.html', group=group, members=members)
     except groups_services.GroupServiceException as e:
         flash(str(e), "danger")
         return redirect(url_for('home.home'))
@@ -97,7 +95,7 @@ def edit_group(group_id):
         except groups_services.GroupServiceException as e:
             flash(str(e), "danger")
             return redirect(url_for('home.group_details', group_id=group_id))
-    return render_template('edit_group.html', form=form, members=members, group=group)
+    return render_template('group/edit_group.html', form=form, members=members, group=group)
 
 
 @home_blueprint.route('/group/<int:group_id>/remove_user/<int:user_id>', methods=['GET', 'POST'])

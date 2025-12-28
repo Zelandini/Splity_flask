@@ -1,9 +1,9 @@
 # /Splity_flask/Splity/services/groups_services.py
-from flask_login import current_user
+from typing import List
 
-from Splity.adapters.orm import user_groups
 from Splity.adapters.repository import GroupRepository, UserRepository
-from Splity.domainmodel.models import Group
+from Splity.domainmodel.models import Group, User
+
 
 class GroupServiceException(Exception):
     pass
@@ -12,7 +12,6 @@ class GroupServiceException(Exception):
 def create_group(name: str, description: str, currency: str, creator_id: int) -> Group:
     repo = GroupRepository()
     existing_group = repo.get_by_name_and_membership(name, creator_id)
-    print(existing_group)
     if existing_group:
         raise GroupServiceException(f"You already have a group named '{name}'.")
     if not name or not name.strip():
@@ -126,6 +125,16 @@ def get_group(group_id: int) -> Group:
     repo = GroupRepository()
     group = repo.get_by_id(group_id)
     return group
+
+def get_user_groups(user_id: int) -> List[Group]:
+    repo = GroupRepository()
+    groups = repo.get_user_groups(user_id)
+    return groups
+
+def get_group_members(group_id: int) -> List[User]:
+    repo = GroupRepository()
+    members = repo.get_group_members(group_id)
+    return members
 
 
 
