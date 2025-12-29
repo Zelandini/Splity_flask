@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, redirect, flash, url_for
 from flask_login import login_required, current_user
 
 from Splity.forms.forms import GroupCreationForm, JoinGroupForm, GroupEditForm
-from Splity.services import groups_services, currency_service
+from Splity.services import groups_services, currency_service, bill_services
 
 home_blueprint = Blueprint("home", __name__)
 
@@ -73,7 +73,18 @@ def join_group():
 def group_details(group_id):
     try:
         group, members = groups_services.get_group_details(group_id, current_user.id)
-        return render_template('group/group_details.html', group=group, members=members)
+        bills = groups_services.get_all_bills(group_id)
+
+        # Pair bills with their creators in a single list of tuples
+        bill_data = []
+        for bill in bills:
+            creator = bill_services.get_user_by_id(bill.user_id)
+            bill_data.append((bill, creator))
+
+        return render_template('group/group_details.html',
+                               group=group,
+                               members=members,
+                               bill_data=bill_data)  # Pass the zipped list
     except groups_services.GroupServiceException as e:
         flash(str(e), "danger")
         return redirect(url_for('home.home'))

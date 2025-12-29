@@ -1,8 +1,8 @@
 # /Splity_flask/Splity/services/groups_services.py
 from typing import List
 
-from Splity.adapters.repository import GroupRepository, UserRepository
-from Splity.domainmodel.models import Group, User
+from Splity.adapters.repository import GroupRepository, UserRepository, BillRepository
+from Splity.domainmodel.models import Group, User, Bill
 
 
 class GroupServiceException(Exception):
@@ -135,6 +135,11 @@ def get_group_members(group_id: int) -> List[User]:
     repo = GroupRepository()
     members = repo.get_group_members(group_id)
     return members
+
+def get_all_bills(group_id: int) -> List[Bill]:
+    repo = BillRepository()
+    bills = repo.get_all_bills(group_id)
+    return bills
 
 
 

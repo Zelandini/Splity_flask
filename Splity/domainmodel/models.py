@@ -1,7 +1,7 @@
 # /Splity_flask/Splity/domainmodel/models.py
 
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -69,7 +69,7 @@ class Bill:
         self.__user_id = user_id
         self.__description = description
         self.__amount = amount
-        self.__date = created_date if created_date else datetime.now()
+        self.__date = created_date if created_date else datetime.now(timezone.utc)
         self.__group_id = group_id
 
     @property
@@ -89,6 +89,10 @@ class Bill:
 
     @property
     def group_id(self): return self.__group_id
+
+    @date.setter
+    def date(self, date):
+        self.__date = date
 
 
 class BillParticipant:

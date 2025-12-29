@@ -45,19 +45,34 @@
     <hr>
 
     <h3>Bills</h3>
-    <p><em>Bill functionality coming soon...</em></p>
-    <!-- Future: Add bills list here -->
+    {% if bill_data %}
+        <ul style="list-style-type: none; padding: 0;">
+        {% for bill, creator in bill_data %}
+            <li style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                <strong>{{ bill.description }}</strong><br>
+                <small>{{ bill.amount }} {{ group.currency }}</small><br>
+                <small>
+                    Created at: {{ bill.date }} |
+                    by: {{ creator.name }} (@{{ creator.username }})
+                </small><br>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No bills added yet!</p>
+    {% endif %}
 
     <hr>
 
     <div class="actions">
         <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Back to Home</a>
-        <!-- Future: Add "Create Bill" button here -->
+
         {% if current_user.id == group.creator_id %}
             <a href="{{ url_for('home.delete_group', group_id=group.id, user_id=current_user.id) }}" class="btn btn-secondary">Delete Group</a>
         {% else %}
             <a href="{{ url_for('home.leave_group', group_id=group.id, user_id=current_user.id) }}" class="btn btn-secondary">Leave Group</a>
         {% endif %}
+        <a href="{{ url_for('bills.create_bill', group_id=group.id) }}" class="btn btn-secondary">Add bill</a>
     </div>
 </div>
 {% endblock %}

@@ -25,13 +25,24 @@
         </p>
 
         <p>
-            {{ form.owe_members.label }}<br>
-            {{ form.owe_members(class="form-control") }}<br>
-            {% for error in form.owe_members.errors %}
+            {{ form.amount.label }} ({{ currency }}) <br>
+            {{ form.amount(class="form-control", rows=3) }}<br>
+            {% for error in form.amount.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
 
+        <p> Paid by YOU spread</p>
+        <p>
+        {{ form.names.label }}
+        {{ form.names() }}
+        {% if form.names.errors %}
+            <ul>
+                {% for error in form.names.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         <p>{{ form.submit(class="btn btn-primary") }}</p>
     </form>
 </div>

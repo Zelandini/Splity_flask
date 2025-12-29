@@ -2,7 +2,9 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, SelectMultipleField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms.fields.numeric import DecimalField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange
+from wtforms.widgets import CheckboxInput, ListWidget
 
 
 class LoginForm(FlaskForm):
@@ -40,7 +42,12 @@ class JoinGroupForm(FlaskForm):
     submit = SubmitField('Join Group')
 
 
+class SelectMultipleCheckboxesField(SelectMultipleField):
+    widget = ListWidget(prefix_label=False)
+    option_widget = CheckboxInput()
+
 class CreateBillForm(FlaskForm):
     description = StringField('Description', validators=[DataRequired(), Length(min=2, max=50)])
-    owe_members = SelectMultipleField('Owe Member', choices=[], validators=[DataRequired()])
+    names = SelectMultipleCheckboxesField('Select which people owe an equal share', choices=[], validators=[DataRequired()])
+    amount = DecimalField('Amount', validators=[DataRequired(), NumberRange(min=1)])
     submit = SubmitField('Create Bill')

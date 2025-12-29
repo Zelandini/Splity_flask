@@ -68,7 +68,8 @@ class BillRepository:
             user_id=bill.user_id,
             description=bill.description,
             date=bill.date,
-            amount=bill.amount
+            amount=bill.amount,
+            group_id = bill.group_id
         )
         db.session.add(bill_orm)
         db.session.commit()
@@ -89,10 +90,18 @@ class BillRepository:
         bills_orm = BillORM.query.filter(BillORM.id.in_(bill_ids)).all()
         return [self._to_domain(b) for b in bills_orm]
 
+    def get_bill_by_name_and_group_id(self, description: str, group_id: int):
+        bill = BillORM.query.filter_by(description=description, group_id=group_id).first()
+        return self._to_domain(bill) if bill else None
+
     def get_bills_created_by_user(self, user_id: int):
         """Get all bills created by user"""
         bills_orm = BillORM.query.filter_by(user_id=user_id).all()
         return [self._to_domain(b) for b in bills_orm]
+
+    def get_all_bills(self, group_id: int):
+        bills_orm = BillORM.query.filter_by(group_id=group_id).all()
+        return[self._to_domain(b) for b in bills_orm]
 
     def _to_domain(self, bill_orm: BillORM) -> Bill:
         return Bill(

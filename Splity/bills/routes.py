@@ -1,7 +1,7 @@
 # /Splity_flask/Splity/bills/routes.py
 
 
-from flask import Blueprint, render_template, redirect, flash, url_for
+from flask import Blueprint, render_template, redirect, flash, url_for, request
 from flask_login import login_required, current_user
 
 from Splity.forms.forms import CreateBillForm
@@ -15,9 +15,20 @@ bills_blueprint = Blueprint('bills', __name__)
 @login_required
 def create_bill(group_id):
     form = CreateBillForm()
+    currency = groups_services.get_group(group_id).currency
     owe_members = groups_services.get_group_members(group_id)
-    form.owe_members.choices = [f"{member.name} | @{member.username}" for member in owe_members]
-    # if form.validate_on_submit():
-    #     try:
-    #         bill = groups_services.ad
-    return render_template("bills/create_bill.html", form=form)
+    form.names.choices = [f"{member.name} | @{member.username}" for member in owe_members]
+    if request.method == 'GET':
+        form.names.data = form.names.choices
+    if form.validate_on_submit():
+        try:
+            bill = bill_services.add_bill(user_id=current_user.id,
+                                          description=form.description.data,
+                                          amount=form.amount.data,
+                                          owe_members=[member.id for member in owe_members],
+                                          group_id=group_id)
+            flash(f"Bill '{bill.description}' Added", 'success')
+            return redirect(url_for('home.group_details', group_id=group_id))
+        except bill_services.BillServiceException as e:
+            flash(str(e), 'danger')
+    return render_template("bills/create_bill.html", form=form, currency=currency)
