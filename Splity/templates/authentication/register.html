@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %} Register | Splity {% endblock %}
+{% block title %}Splity - Sign Up{% endblock %}
 
 {% block content %}
 {% for message in get_flashed_messages() %}
     <p>{{ message }}</p>
 {% endfor %}
-<h1>Register</h1>
+<h1>Create New Account</h1>
 <form method="POST">
 
     {{ form.hidden_tag() }}

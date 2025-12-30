@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ group.name }}{% endblock %}
+{% block title %}Splity{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -55,6 +55,9 @@
                     Created at: {{ bill.date }} |
                     by: {{ creator.name }} (@{{ creator.username }})
                 </small><br>
+                {% if current_user.id == creator.id or current_user.id == group.creator_id%}
+                    <a href="{{ url_for('bills.delete_bill', bill_id=bill.id, group_id=group.id) }}" class="btn btn-secondary">Remove</a>
+                {% endif %}
             </li>
         {% endfor %}
         </ul>

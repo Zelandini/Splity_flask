@@ -103,6 +103,15 @@ class BillRepository:
         bills_orm = BillORM.query.filter_by(group_id=group_id).all()
         return[self._to_domain(b) for b in bills_orm]
 
+    def delete_bill_repo(self, bill_id: int):
+        bill_orm = db.session.get(BillORM, bill_id)
+        if bill_orm:
+            BillParticipantORM.query.filter_by(bill_id=bill_id).delete()
+            db.session.delete(bill_orm)
+            db.session.commit()
+            return True
+        return False
+
     def _to_domain(self, bill_orm: BillORM) -> Bill:
         return Bill(
             bill_id=bill_orm.id,

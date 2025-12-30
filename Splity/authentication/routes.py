@@ -8,7 +8,7 @@ from Splity.services import authentication_services
 
 authentication_blueprint = Blueprint("authentication", __name__)
 
-@authentication_blueprint.route('/register', methods=['GET', 'POST'])
+@authentication_blueprint.route('/register', methods=['GET', 'POST'], strict_slashes=False)
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home.home'))
@@ -26,7 +26,7 @@ def register():
     return render_template('authentication/register.html', form=form)
 
 
-@authentication_blueprint.route('/login', methods=['GET', 'POST'])
+@authentication_blueprint.route('/login', methods=['GET', 'POST'], strict_slashes=False)
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home.home'))
@@ -43,7 +43,7 @@ def login():
     return render_template('authentication/authentication.html', form=form)
 
 
-@authentication_blueprint.route('/logout')
+@authentication_blueprint.route('/logout', strict_slashes=False)
 def logout():
     logout_user()
     flash('You have been logged out', 'info')

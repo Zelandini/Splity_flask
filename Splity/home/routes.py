@@ -9,7 +9,7 @@ from Splity.services import groups_services, currency_service, bill_services
 home_blueprint = Blueprint("home", __name__)
 
 
-@home_blueprint.route('/')
+@home_blueprint.route('/', strict_slashes=False)
 def home():
     """Home page - shows user's groups"""
     groups = []
@@ -18,7 +18,7 @@ def home():
     return render_template('home.html', groups=groups)
 
 
-@home_blueprint.route('/create_group', methods=['GET', 'POST'])
+@home_blueprint.route('/create_group',methods=['GET', 'POST'], strict_slashes=False)
 @login_required
 def create_group():
     """Create a new group"""
@@ -31,8 +31,8 @@ def create_group():
         try:
             # Call the service to create group
             group = groups_services.create_group(
-                name=form.name.data,
-                description=form.description.data,
+                name=form.name.data.rstrip(),
+                description=form.description.data.rstrip(),
                 currency=form.currency.data,
                 creator_id=current_user.id
             )
@@ -46,7 +46,7 @@ def create_group():
     return render_template('group/group_creation.html', form=form)
 
 
-@home_blueprint.route('/join_group', methods=['GET', 'POST'])
+@home_blueprint.route('/join_group', methods=['GET', 'POST'], strict_slashes=False)
 @login_required
 def join_group():
     """Join an existing group using invite code"""
@@ -68,7 +68,7 @@ def join_group():
     return render_template('group/join_group.html', form=form)
 
 
-@home_blueprint.route('/group/<int:group_id>')
+@home_blueprint.route('/group/<int:group_id>', strict_slashes=False)
 @login_required
 def group_details(group_id):
     try:
@@ -90,7 +90,7 @@ def group_details(group_id):
         return redirect(url_for('home.home'))
 
 
-@home_blueprint.route('/group/<int:group_id>/edit', methods=['GET', 'POST'])
+@home_blueprint.route('/group/<int:group_id>/edit', methods=['GET', 'POST'], strict_slashes=False)
 @login_required
 def edit_group(group_id):
     group, members = groups_services.get_group_details(group_id, current_user.id)
@@ -100,7 +100,10 @@ def edit_group(group_id):
     #     return redirect(url_for('home.group_details', group_id=group.id))
     if form.validate_on_submit():
         try:
-            group = groups_services.edit_group(name=form.name.data, description=form.description.data, group_id=group_id, creator_id=current_user.id)
+            group = groups_services.edit_group(name=form.name.data.rstrip(),
+                                               description=form.description.data.rstrip(),
+                                               group_id=group_id,
+                                               creator_id=current_user.id)
             flash(f"Successfully edited Group '{group.name}'", "success")
             return redirect(url_for('home.group_details', group_id=group_id))
         except groups_services.GroupServiceException as e:
@@ -109,7 +112,9 @@ def edit_group(group_id):
     return render_template('group/edit_group.html', form=form, members=members, group=group)
 
 
-@home_blueprint.route('/group/<int:group_id>/remove_user/<int:user_id>', methods=['GET', 'POST'])
+@home_blueprint.route('/group/<int:group_id>/remove_user/<int:user_id>',
+                      methods=['GET', 'POST'],
+                      strict_slashes=False)
 @login_required
 def remove_user(group_id, user_id):
     try:
@@ -120,7 +125,7 @@ def remove_user(group_id, user_id):
         flash(str(e), "danger")
 
 
-@home_blueprint.route('/group/<int:group_id>/leave', methods=['GET', 'POST'])
+@home_blueprint.route('/group/<int:group_id>/leave', methods=['GET', 'POST'], strict_slashes=False)
 @login_required
 def leave_group(group_id):
     try:
@@ -132,7 +137,7 @@ def leave_group(group_id):
         return redirect(url_for('home.group_details', group_id=group_id))
 
 
-@home_blueprint.route('/group/<int:group_id>/delete', methods=['GET', 'POST'])
+@home_blueprint.route('/group/<int:group_id>/delete', methods=['GET', 'POST'], strict_slashes=False)
 @login_required
 def delete_group(group_id):
     try:
