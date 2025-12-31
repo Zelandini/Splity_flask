@@ -1,7 +1,7 @@
 # /Splity_flask/Splity/adapters/repository.py
 
 from Splity.adapters.database import db
-from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM, user_groups
+from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM
 from Splity.domainmodel.models import User, Bill, BillParticipant, Group
 
 
@@ -103,7 +103,12 @@ class BillRepository:
         bills_orm = BillORM.query.filter_by(group_id=group_id).all()
         return[self._to_domain(b) for b in bills_orm]
 
-    def delete_bill_repo(self, bill_id: int):
+    def get_all_bills_in_group_by_user(self, group_id: int, user_id: int):
+        bills_orm = BillORM.query.filter_by(group_id=group_id, user_id=user_id).all()
+        return[self._to_domain(b) for b in bills_orm]
+
+
+    def delete_bill(self, bill_id: int):
         bill_orm = db.session.get(BillORM, bill_id)
         if bill_orm:
             BillParticipantORM.query.filter_by(bill_id=bill_id).delete()
@@ -158,6 +163,10 @@ class BillParticipantRepository:
             db.session.commit()
             return True
         return False
+
+    def all_participants_in_group(self, bill_id: int):
+        participants = BillParticipantORM.query.filter_by(bill_id=bill_id).all()
+        return [self._to_domain(p) for p in participants]
 
     def _to_domain(self, participant_orm: BillParticipantORM) -> BillParticipant:
         return BillParticipant(

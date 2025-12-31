@@ -1,50 +1,58 @@
 {% extends 'base.html' %}
 
-{% block title %}Splity{% endblock %}
+{% block title %}Splity - Add Bill{% endblock %}
 
 {% block content %}
 <div class="container">
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-    <h1>Add bill</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h1>Add Bill</h1>
+    <p>Record a new expense that will be split among group members.</p>
+
     <form method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.description.label }}<br>
-            {{ form.description(class="form-control", rows=3) }}<br>
+            {{ form.description.label }}
+            {{ form.description(class="form-control", rows=3) }}
             {% for error in form.description.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
 
         <p>
-            {{ form.amount.label }} ({{ currency }}) <br>
-            {{ form.amount(class="form-control", rows=3) }}<br>
+            {{ form.amount.label }} ({{ currency }})
+            {{ form.amount(class="form-control") }}
             {% for error in form.amount.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
 
-        <p> Paid by YOU spread</p>
+        <p><strong>Paid by YOU, split among:</strong></p>
         <p>
-        {{ form.names.label }}
-        {{ form.names() }}
-        {% if form.names.errors %}
-            <ul>
-                {% for error in form.names.errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+            {{ form.names.label }}
+            {{ form.names(class="form-control") }}
+            {% if form.names.errors %}
+                <ul>
+                    {% for error in form.names.errors %}
+                        <li style="color: red;">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </p>
+
         <p>{{ form.submit(class="btn btn-primary") }}</p>
     </form>
+
+{#    <div class="actions">#}
+{#        <a href="{{ url_for('home.group_details', group_id=request.args.get('group_id')) }}" class="btn btn-secondary">Cancel</a>#}
+{#    </div>#}
 </div>
 {% endblock %}
-

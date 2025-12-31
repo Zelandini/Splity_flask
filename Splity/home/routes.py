@@ -73,18 +73,19 @@ def join_group():
 def group_details(group_id):
     try:
         group, members = groups_services.get_group_details(group_id, current_user.id)
-        bills = groups_services.get_all_bills(group_id)
-
-        # Pair bills with their creators in a single list of tuples
-        bill_data = []
-        for bill in bills:
-            creator = bill_services.get_user_by_id(bill.user_id)
-            bill_data.append((bill, creator))
-
+        bills_and_creator = bill_services.get_bills_and_creators_service(group_id)
+        total = bill_services.total_group_spending(group_id)
+        settle, users_net_balance = bill_services.settling_algorithm(group_id)
+        user_net_balance = bill_services.get_user_net_balances(users_net_balance, current_user.id)[1]
+        print(user_net_balance)
+        print(settle)
         return render_template('group/group_details.html',
                                group=group,
                                members=members,
-                               bill_data=bill_data)  # Pass the zipped list
+                               bill_data=bills_and_creator,
+                               total_group_spending=total,
+                               user_net_balance=round(user_net_balance, 2),
+                               settle_payments=settle)
     except groups_services.GroupServiceException as e:
         flash(str(e), "danger")
         return redirect(url_for('home.home'))

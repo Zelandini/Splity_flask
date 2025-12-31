@@ -15,7 +15,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         try:
-            authentication_services.add_user(name=form.name.data,
+            authentication_services.add_user_service(name=form.name.data,
                                              username=form.username.data,
                                              email=form.email.data,
                                              password=form.password.data)
@@ -33,7 +33,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            user = authentication_services.authenticate_user(username=form.username.data,
+            user = authentication_services.authenticate_user_service(username=form.username.data,
                                                              password=form.password.data)
             login_user(user)
             flash('Login successful!', 'success')

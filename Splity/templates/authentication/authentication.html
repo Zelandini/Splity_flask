@@ -3,30 +3,29 @@
 {% block title %}Splity - Login{% endblock %}
 
 {% block content %}
-{% for message in get_flashed_messages() %}
-    <p>{{ message }}</p>
-{% endfor %}
-<h1>Login</h1>
-<form method="post" novalidate>
-    {{ form.hidden_tag() }}
-    <p>
-        {{ form.username.label }}<br>
-        {{ form.username(size=32) }}<br>
+    <h1>Login</h1>
+    <p>Authentication required to access groups.</p>
+
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <label>Username</label>
+        {{ form.username(class="form-control") }}
         {% for error in form.username.errors %}
-        <span style="color: red;">[{{ error }}]</span>
+            <span style="color: red; font-size: 0.8rem;">[{{ error }}]</span>
         {% endfor %}
-    </p>
-    <p>
-        {{ form.password.label }}<br>
-        {{ form.password(size=32) }}<br>
+
+        <label style="margin-top: 1.5rem;">Password</label>
+        {{ form.password(class="form-control") }}
         {% for error in form.password.errors %}
-        <span style="color: red;">[{{ error }}]</span>
+            <span style="color: red; font-size: 0.8rem;">[{{ error }}]</span>
         {% endfor %}
-    </p>
-{#    <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>#}
-    <p>{{ form.submit() }}</p>
-</form>
 
-<p>Don't have an account? <a href="{{ url_for('authentication.register') }}">Register here</a></p>
+        <div style="margin-top: 2rem;">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
 
+    <hr>
+    <p>New here? <a href="{{ url_for('authentication.register') }}" style="color: var(--primary-blue); font-weight: 700;">Create an account</a></p>
 {% endblock %}

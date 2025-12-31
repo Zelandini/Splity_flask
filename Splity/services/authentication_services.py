@@ -1,6 +1,5 @@
 # /Splity_flask/Splity/services/authentication_services.py
 
-
 from typing import Optional
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -12,7 +11,7 @@ class AuthenticationException(Exception):
     pass
 
 
-def add_user(name: str, username: str, email: str, password: str):
+def add_user_service(name: str, username: str, email: str, password: str):
     repo = UserRepository()
     if repo.get_by_username(username):
         raise AuthenticationException(f"User {username} already exists")
@@ -21,7 +20,7 @@ def add_user(name: str, username: str, email: str, password: str):
     user = User(name=name, username=username, email=email, password=hashed_password)
     repo.add(user)
 
-def authenticate_user(username: str, password: str) -> Optional[User]:
+def authenticate_user_service(username: str, password: str) -> Optional[User]:
     repo = UserRepository()
     user = repo.get_by_username(username)
 

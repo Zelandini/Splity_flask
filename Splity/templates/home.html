@@ -1,58 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}Splity - Home{% endblock %}
-
 {% block content %}
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
     {% if current_user.is_authenticated %}
-        <h1>Welcome to Splity, {{ current_user.name }}!</h1>
-        <p>Your simple expense-sharing app.</p>
+        <h1>Your Dashboard</h1>
+        <p style="margin-bottom: 2rem;">Welcome back, {{ current_user.name }}. Manage your group expenses below.</p>
 
-        <hr>
-
-        <div class="actions">
-            <a href="{{ url_for('home.create_group') }}" class="btn btn-success">
-                Create New Group
-            </a>
-
-            <span style="margin: 0 10px;">or</span>
-
-            <a href="{{ url_for('home.join_group') }}" class="btn btn-secondary">
-                Join a Group
-            </a>
+        <div style="display: flex; gap: 15px; margin-bottom: 3rem;">
+            <a href="{{ url_for('home.create_group') }}" class="btn btn-primary">Create New Group</a>
+            <a href="{{ url_for('home.join_group') }}" class="btn btn-secondary">Join Existing Group</a>
         </div>
 
-        <hr>
-
-        <h3>Your Groups</h3>
+        <h2>Active Groups</h2>
         {% if groups %}
-            <ul style="list-style-type: none; padding: 0;">
+            <ul>
             {% for group in groups %}
-                <li style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                    <strong>{{ group.name }}</strong><br>
-                    <small>{{ group.description }}</small><br>
-                    <small>Currency: {{ group.currency }} | Invite Code: <code>{{ group.invite_code }}</code></small><br>
-                    <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-primary" style="margin-top: 5px;">View Details</a>
+                <li>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>{{ group.name }}</strong>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">CODE: {{ group.invite_code }}</span>
+                        </div>
+                        <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-primary" style="padding: 10px 20px;">Open Group</a>
+                    </div>
                 </li>
             {% endfor %}
             </ul>
         {% else %}
-            <p>You haven't joined any groups yet. Create one or join using an invite code!</p>
+            <p>You are not currently in any groups.</p>
         {% endif %}
     {% else %}
-        <h1>Welcome to Splity!</h1>
-        <p>Your simple expense-sharing app.</p>
-        <p>Please <a href="{{ url_for('authentication.login') }}">login</a> or <a href="{{ url_for('authentication.register') }}">register</a> to get started.</p>
+        <h1>Welcome to Splity.</h1>
+        <p style="margin: 2rem 0; font-size: 1.2rem;">Modern. Rigid. Transparent. The professional way to split costs.</p>
+        <div style="display: flex; gap: 15px;">
+            <a href="{{ url_for('authentication.login') }}" class="btn btn-primary">Login Now</a>
+            <a href="{{ url_for('authentication.register') }}" class="btn btn-secondary">Sign Up</a>
+        </div>
     {% endif %}
-</div>
 {% endblock %}

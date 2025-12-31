@@ -11,5 +11,5 @@ def get_currency() -> list[tuple]:
         # Returns a list of tuples: [('USD', 'United States Dollar'), ...]
         return [(code.upper(), name) for code, name in data.items()]
     except Exception:
-        # Fallback if API is down
+
         return [('USD', 'US Dollar'), ('EUR', 'Euro'), ('GBP', 'British Pound')]
