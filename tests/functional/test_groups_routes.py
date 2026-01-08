@@ -1,4 +1,3 @@
-import pytest
 from Splity.adapters.repository import GroupRepository, UserRepository
 
 
@@ -235,7 +234,6 @@ def test_user_cannot_view_unjoined_group_details(app, authenticated_client):
 
 def test_different_users_can_create_groups_with_same_name(app, authenticated_client):
     """Test that different users can create groups with the same name"""
-    from Splity.services import authentication_services
     from Splity.adapters.repository import GroupRepository, UserRepository
 
     # 1. User1 (testuser) creates "Trip to Italy"
@@ -369,7 +367,9 @@ def test_user_joins_group_then_creates_group_with_same_name(app, authenticated_c
     # deduplicate by id
     unique_ids = {g.id for g in combined}
 
-    assert len(unique_ids) >= 2, "Expected two distinct 'Roommates' groups (one created by each user) when creation succeeds"
+    assert len(unique_ids) >= 2, (
+        "Expected two distinct 'Roommates' groups (one created by each user) when creation succeeds"
+    )
 
     # Both groups should have same name but different creators
     roommates_groups = [g for g in combined if g.name == "Roommates"]
@@ -493,3 +493,57 @@ def test_non_creator_cannot_edit_group(app, authenticated_client):
         original_group = GroupRepository().get_by_id(group_id)
         assert original_group.name == "Test Group"
 
+
+def test_leave_group_non_creator(authenticated_client, app):
+    authenticated_client.post('/create_group', data={
+        "name": "Leave Group",
+        "description": "Leave me",
+        "currency": "USD",
+    }, follow_redirects=True)
+
+    user_repo = UserRepository()
+    group_repo = GroupRepository()
+    creator = user_repo.get_by_username("testuser")
+    group = group_repo.get_user_groups(creator.id)[0]
+
+    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/register', data={
+        "name": "Other User", "username": "otheruser",
+        "email": "other@test.com", "password": "Password123",
+        "password2": "Password123"
+    }, follow_redirects=True)
+    authenticated_client.post('/login', data={
+        "username": "otheruser",
+        "password": "Password123"
+    }, follow_redirects=True)
+    authenticated_client.post('/join_group', data={"invite_code": group.invite_code}, follow_redirects=True)
+
+    response = authenticated_client.get(f'/group/{group.id}/leave', follow_redirects=True)
+    assert "successfully leave" in response.get_data(as_text=True).lower()
+
+
+def test_delete_group_requires_creator(authenticated_client):
+    authenticated_client.post('/create_group', data={
+        "name": "Delete Group",
+        "description": "Remove me",
+        "currency": "USD",
+    }, follow_redirects=True)
+
+    user_repo = UserRepository()
+    group_repo = GroupRepository()
+    creator = user_repo.get_by_username("testuser")
+    group = group_repo.get_user_groups(creator.id)[0]
+
+    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/register', data={
+        "name": "Other User", "username": "otheruser",
+        "email": "other@test.com", "password": "Password123",
+        "password2": "Password123"
+    }, follow_redirects=True)
+    authenticated_client.post('/login', data={
+        "username": "otheruser",
+        "password": "Password123"
+    }, follow_redirects=True)
+
+    response = authenticated_client.get(f'/group/{group.id}/delete', follow_redirects=True)
+    assert "not authorised" in response.get_data(as_text=True).lower()
