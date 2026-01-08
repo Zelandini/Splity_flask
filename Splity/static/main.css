@@ -35,6 +35,7 @@ nav {
     display: flex;
     align-items: center;
     gap: 20px;
+    flex-wrap: wrap;
     margin-bottom: 30px;
     border-bottom: 4px solid var(--primary-blue);
 }
@@ -50,14 +51,25 @@ nav a {
     transition: background 0.2s;
 }
 
+.nav-brand {
+    font-size: 1rem;
+}
+
 nav a:hover {
     background: var(--primary-blue);
 }
 
-nav span {
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.nav-user {
     color: var(--light-blue);
     font-weight: 400;
-    margin-left: auto;
 }
 
 /* Container */
@@ -133,6 +145,88 @@ input:focus, textarea:focus {
     border-color: var(--primary-blue);
 }
 
+/* Layout Helpers */
+.page-intro {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 2rem;
+}
+
+.list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.list-row--start {
+    align-items: flex-start;
+}
+
+.list-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.detail-block {
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: var(--light-blue);
+    padding: 2rem;
+    border: 2px solid var(--primary-blue);
+    margin-bottom: 3rem;
+}
+
+.summary-card h3 {
+    color: var(--dark-blue);
+    margin-top: 0;
+}
+
+.balance {
+    font-weight: 800;
+}
+
+.balance--positive {
+    color: #007a33;
+}
+
+.balance--negative {
+    color: #d00;
+}
+
+.section-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 2px solid #ddd;
+}
+
+.form-error {
+    color: #d00;
+    font-size: 0.85rem;
+    display: block;
+}
+
+.inline-link {
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.badge {
+    color: #007a33;
+    font-weight: 700;
+    margin-left: 6px;
+    font-size: 0.8rem;
+}
+
 /* Buttons - Sharp and Flat */
 .btn {
     display: inline-block;
@@ -171,6 +265,17 @@ input:focus, textarea:focus {
 .btn-success {
     background: #1a8a3d;
     color: white;
+}
+
+.btn-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #721c24;
+}
+
+.btn-small {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
 }
 
 /* Lists and Items */
@@ -219,4 +324,37 @@ code {
     color: #fff;
     padding: 5px 10px;
     font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    nav {
+        padding: 1rem;
+        gap: 12px;
+    }
+
+    .nav-links {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .container {
+        padding: 2rem 1.5rem;
+        box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.08);
+    }
+
+    .button-row,
+    .list-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn,
+    input[type="submit"] {
+        width: 100%;
+    }
 }
