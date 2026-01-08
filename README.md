@@ -73,6 +73,10 @@ pip install -r requirements.txt
 python wsgi.py
 ```
 
+The app will create a local SQLite database at `splity.db` on first run (or use
+`DATABASE_URL` to point at another database). Set `SECRET_KEY` in your shell if
+you want a custom session secret.
+
 Visit **http://localhost:5000**
 
 ### Quick Start
@@ -85,9 +89,14 @@ Visit **http://localhost:5000**
 ## 🧪 Testing
 
 ```bash
-pytest                          # Run all tests
-pytest -v                       # Verbose output
-pytest --cov=Splity tests/      # With coverage
+python -m pytest                          # Run all tests
+python -m pytest -v                       # Verbose output
+```
+
+To run coverage locally, install `pytest-cov` and then run:
+
+```bash
+python -m pytest --cov=Splity tests/
 ```
 
 **Test coverage:**
