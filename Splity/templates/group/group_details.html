@@ -7,7 +7,11 @@
     <div class="detail-block">
         <p><strong>DESCRIPTION:</strong> {{ group.description }}</p>
         <p><strong>CURRENCY:</strong> {{ group.currency }}</p>
-        <p><strong>INVITE CODE:</strong> <code>{{ group.invite_code }}</code></p>
+        <p><strong>INVITE CODE:</strong></p>
+        <div class="copy-container" onclick="copyToClipboard('{{ group.invite_code }}', this)">
+            <code id="invite-code" style="font-size: 1.5rem; letter-spacing: 2px;">{{ group.invite_code }}</code>
+            <span class="copy-hint">Click to copy</span>
+        </div>
     </div>
 
     <div class="button-row">

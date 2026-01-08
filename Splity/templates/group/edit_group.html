@@ -3,8 +3,19 @@
 {% block title %}Splity - Edit Group{% endblock %}
 
 {% block content %}
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <h1>Edit Group</h1>
-    <p class="page-intro">Update your group information and manage members.</p>
+    <p>Update your group information and manage members.</p>
 
     <form method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -13,7 +24,7 @@
             {{ form.name.label }}
             {{ form.name(class="form-control", size=32) }}
             {% for error in form.name.errors %}
-                <span class="form-error">[{{ error }}]</span>
+                <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
 
@@ -21,14 +32,11 @@
             {{ form.description.label }}
             {{ form.description(class="form-control", rows=3) }}
             {% for error in form.description.errors %}
-                <span class="form-error">[{{ error }}]</span>
+                <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
 
-        <div class="button-row">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-secondary">Back to Group</a>
-        </div>
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
     </form>
 
     <hr>
@@ -38,11 +46,11 @@
         <ul>
         {% for member in members %}
             <li>
-                <div class="list-row">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong>{{ member.name }}</strong> (@{{ member.username }})
                         {% if member.id == group.creator_id %}
-                            <span class="badge">[Creator]</span>
+                            <span style="color: green;">[Creator]</span>
                         {% endif %}
                     </div>
                     {% if member.id != group.creator_id %}
@@ -55,4 +63,9 @@
     {% else %}
         <p>No members in this group yet.</p>
     {% endif %}
+
+    <div class="actions">
+        <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-secondary">Back to Group</a>
+    </div>
+</div>
 {% endblock %}

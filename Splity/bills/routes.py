@@ -31,7 +31,7 @@ def create_bill(group_id):
             return redirect(url_for('home.group_details', group_id=group_id))
         except bill_services.BillServiceException as e:
             flash(str(e), 'danger')
-    return render_template("bills/create_bill.html", form=form, currency=currency)
+    return render_template("bills/create_bill.html", form=form, currency=currency, group_id=group_id)
 
 
 @bills_blueprint.route('/group/<int:group_id>/delete_bill/<int:bill_id>', methods=['GET', 'POST'], strict_slashes=False)

@@ -32,4 +32,27 @@
         {% block content %}{% endblock %}
     </div>
 </body>
+<script>
+function copyToClipboard(text, element) {
+    // 1. Copy the text to the clipboard
+    navigator.clipboard.writeText(text).then(function() {
+
+        // 2. Visual Feedback: Change text and styling
+        const hint = element.querySelector('.copy-hint');
+        const originalText = hint.innerText;
+
+        hint.innerText = "Copied!";
+        element.classList.add('copied');
+
+        // 3. Reset after 2 seconds
+        setTimeout(function() {
+            hint.innerText = originalText;
+            element.classList.remove('copied');
+        }, 2000);
+
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+</script>
 </html>

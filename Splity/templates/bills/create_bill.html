@@ -39,7 +39,7 @@
 
         <div class="button-row">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('home.group_details', group_id=request.args.get('group_id')) }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ url_for('home.group_details', group_id=group_id) }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 {% endblock %}
