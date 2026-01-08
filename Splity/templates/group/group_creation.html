@@ -3,19 +3,8 @@
 {% block title %}Splity - Create Group{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
     <h1>Create a New Group</h1>
-    <p>Set up a new group to start tracking shared expenses.</p>
+    <p class="page-intro">Set up a new group to start tracking shared expenses.</p>
 
     <form method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -24,7 +13,7 @@
             {{ form.name.label }}
             {{ form.name(class="form-control", size=32) }}
             {% for error in form.name.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
 
@@ -32,7 +21,7 @@
             {{ form.description.label }}
             {{ form.description(class="form-control", rows=3) }}
             {% for error in form.description.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
 
@@ -40,15 +29,13 @@
             {{ form.currency.label }}
             {{ form.currency(class="form-control") }}
             {% for error in form.currency.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
 
-        <p>{{ form.submit(class="btn btn-primary") }}</p>
+        <div class="button-row">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
-
-    <div class="actions">
-        <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a>
-    </div>
-</div>
 {% endblock %}

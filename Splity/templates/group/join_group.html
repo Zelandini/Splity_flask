@@ -3,19 +3,8 @@
 {% block title %}Splity - Join Group{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
     <h1>Join a Group</h1>
-    <p>Enter an invite code to join an existing group.</p>
+    <p class="page-intro">Enter an invite code to join an existing group.</p>
 
     <form method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -23,14 +12,12 @@
             {{ form.invite_code.label }}
             {{ form.invite_code(class="form-control", size=32) }}
             {% for error in form.invite_code.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
-        <p>{{ form.submit(class="btn btn-primary") }}</p>
+        <div class="button-row">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
-
-    <div class="actions">
-        <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a>
-    </div>
-</div>
 {% endblock %}

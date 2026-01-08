@@ -3,9 +3,9 @@
 {% block content %}
     {% if current_user.is_authenticated %}
         <h1>Your Dashboard</h1>
-        <p style="margin-bottom: 2rem;">Welcome back, {{ current_user.name }}. Manage your group expenses below.</p>
+        <p class="page-intro">Welcome back, {{ current_user.name }}. Manage your group expenses below.</p>
 
-        <div style="display: flex; gap: 15px; margin-bottom: 3rem;">
+        <div class="button-row">
             <a href="{{ url_for('home.create_group') }}" class="btn btn-primary">Create New Group</a>
             <a href="{{ url_for('home.join_group') }}" class="btn btn-secondary">Join Existing Group</a>
         </div>
@@ -15,12 +15,12 @@
             <ul>
             {% for group in groups %}
                 <li>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="list-row">
                         <div>
                             <strong>{{ group.name }}</strong>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">CODE: {{ group.invite_code }}</span>
+                            <span class="list-meta">CODE: {{ group.invite_code }}</span>
                         </div>
-                        <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-primary" style="padding: 10px 20px;">Open Group</a>
+                        <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-primary btn-small">Open Group</a>
                     </div>
                 </li>
             {% endfor %}
@@ -30,8 +30,8 @@
         {% endif %}
     {% else %}
         <h1>Welcome to Splity.</h1>
-        <p style="margin: 2rem 0; font-size: 1.2rem;">Modern. Rigid. Transparent. The professional way to split costs.</p>
-        <div style="display: flex; gap: 15px;">
+        <p class="page-intro">Modern. Rigid. Transparent. The professional way to split costs.</p>
+        <div class="button-row">
             <a href="{{ url_for('authentication.login') }}" class="btn btn-primary">Login Now</a>
             <a href="{{ url_for('authentication.register') }}" class="btn btn-secondary">Sign Up</a>
         </div>

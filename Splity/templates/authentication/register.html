@@ -3,13 +3,8 @@
 {% block title %}Splity - Sign Up{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% for message in get_flashed_messages() %}
-        <div class="alert alert-info">{{ message }}</div>
-    {% endfor %}
-
     <h1>Create New Account</h1>
-    <p>Join Splity and start managing your shared expenses.</p>
+    <p class="page-intro">Join Splity and start managing your shared expenses.</p>
 
     <form method="POST">
         {{ form.hidden_tag() }}
@@ -17,35 +12,35 @@
             {{ form.name.label }}
             {{ form.name(size=32, class="form-control") }}
             {% for error in form.name.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
             {{ form.username.label }}
             {{ form.username(size=32, class="form-control") }}
             {% for error in form.username.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
             {{ form.email.label }}
             {{ form.email(size=32, class="form-control") }}
             {% for error in form.email.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
             {{ form.password.label }}
             {{ form.password(size=32, class="form-control") }}
             {% for error in form.password.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
             {{ form.password2.label }}
             {{ form.password2(size=32, class="form-control") }}
             {% for error in form.password2.errors %}
-                <span style="color: red;">[{{ error }}]</span>
+                <span class="form-error">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
@@ -53,6 +48,5 @@
         </p>
     </form>
 
-    <p>Already have an account? <a href="{{ url_for('authentication.login') }}">Login here</a></p>
-</div>
+    <p>Already have an account? <a href="{{ url_for('authentication.login') }}" class="inline-link">Login here</a></p>
 {% endblock %}

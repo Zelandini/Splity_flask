@@ -8,14 +8,16 @@
 </head>
 <body>
     <nav>
-        <a href="{{ url_for('home.home') }}">Splity.</a>
-        {% if current_user.is_authenticated %}
-            <span>Logged in as: <strong>{{ current_user.username }}</strong></span>
-            <a href="{{ url_for('authentication.logout') }}">Logout</a>
-        {% else %}
-            <a href="{{ url_for('authentication.login') }}">Login</a>
-            <a href="{{ url_for('authentication.register') }}">Register</a>
-        {% endif %}
+        <a class="nav-brand" href="{{ url_for('home.home') }}">Splity.</a>
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+                <span class="nav-user">Logged in as: <strong>{{ current_user.username }}</strong></span>
+                <a href="{{ url_for('authentication.logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('authentication.login') }}">Login</a>
+                <a href="{{ url_for('authentication.register') }}">Register</a>
+            {% endif %}
+        </div>
     </nav>
 
     <div class="container">

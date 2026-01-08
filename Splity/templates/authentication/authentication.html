@@ -4,28 +4,32 @@
 
 {% block content %}
     <h1>Login</h1>
-    <p>Authentication required to access groups.</p>
+    <p class="page-intro">Authentication required to access groups.</p>
 
     <form method="post" novalidate>
         {{ form.hidden_tag() }}
 
-        <label>Username</label>
-        {{ form.username(class="form-control") }}
-        {% for error in form.username.errors %}
-            <span style="color: red; font-size: 0.8rem;">[{{ error }}]</span>
-        {% endfor %}
+        <p>
+            <label>Username</label>
+            {{ form.username(class="form-control") }}
+            {% for error in form.username.errors %}
+                <span class="form-error">[{{ error }}]</span>
+            {% endfor %}
+        </p>
 
-        <label style="margin-top: 1.5rem;">Password</label>
-        {{ form.password(class="form-control") }}
-        {% for error in form.password.errors %}
-            <span style="color: red; font-size: 0.8rem;">[{{ error }}]</span>
-        {% endfor %}
+        <p>
+            <label>Password</label>
+            {{ form.password(class="form-control") }}
+            {% for error in form.password.errors %}
+                <span class="form-error">[{{ error }}]</span>
+            {% endfor %}
+        </p>
 
-        <div style="margin-top: 2rem;">
+        <div class="button-row">
             {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
 
     <hr>
-    <p>New here? <a href="{{ url_for('authentication.register') }}" style="color: var(--primary-blue); font-weight: 700;">Create an account</a></p>
+    <p>New here? <a href="{{ url_for('authentication.register') }}" class="inline-link">Create an account</a></p>
 {% endblock %}
