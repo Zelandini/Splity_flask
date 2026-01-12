@@ -14,6 +14,12 @@ Meanwhile, my friends and I travelled a lot in 2025, constantly frustrated by bi
 
 Building Splity without AI taught me that **understanding beats copying**. Debugging, refactoring, and watching tests pass—that's where real learning happens. This project significantly accelerated my learning progress in web development.
 
+## 🏗️ In Development
+
+- Implementing **Postgres** as Database
+- Deploying app in **AWS**
+- Integrating **React** as the Frontend (https://github.com/Zelandini/Splity_flask-2.0)
+
 ## 🎯 What This Demonstrates
 
 - **Clean Architecture**: Strict separation of concerns across layers
