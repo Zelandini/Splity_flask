@@ -1,23 +1,21 @@
 {% extends 'base.html' %}
-
-{% block title %}Splity - Join Group{% endblock %}
-
+{% block title %}Join group · Splity{% endblock %}
 {% block content %}
-    <h1>Join a Group</h1>
-    <p class="page-intro">Enter an invite code to join an existing group.</p>
-
-    <form method="post" novalidate>
+<div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><span>Join group</span></div>
+<section class="form-shell form-shell--narrow">
+    <div class="form-heading">
+        <span class="eyebrow">You have an invite</span>
+        <h1>Join a group</h1>
+        <p>Enter the six-character code shared by the group owner.</p>
+    </div>
+    <form method="post" novalidate class="stack-form">
         {{ form.hidden_tag() }}
-        <p>
+        <div class="field">
             {{ form.invite_code.label }}
-            {{ form.invite_code(class="form-control", size=32) }}
-            {% for error in form.invite_code.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <div class="button-row">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a>
+            {{ form.invite_code(class="form-control code-input", placeholder="ABC123", autocomplete="off") }}
+            {% for error in form.invite_code.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
         </div>
+        <div class="button-row">{{ form.submit(class="btn btn-primary") }}<a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a></div>
     </form>
+</section>
 {% endblock %}
