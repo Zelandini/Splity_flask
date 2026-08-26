@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Choose your name · Splity{% endblock %}
+{% block content %}
+<section class="login-shell">
+ <div class="login-mark">S</div><span class="eyebrow">One last step</span><h1>What should your friends call you?</h1><p>Signed in as {{ email }}. Use your first and last name so friends recognise you.</p>
+ <form method="post" class="stack-form">{{ form.hidden_tag() }}<div class="field">{{ form.name.label }}{{ form.name(class="form-control",autocomplete="name") }}{% for error in form.name.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>{{ form.submit(class="btn btn-primary") }}</form>
+</section>
+{% endblock %}
