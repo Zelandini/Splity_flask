@@ -1,41 +1,19 @@
 {% extends 'base.html' %}
-
-{% block title %}Splity - Create Group{% endblock %}
-
+{% block title %}Create group · Splity{% endblock %}
 {% block content %}
-    <h1>Create a New Group</h1>
-    <p class="page-intro">Set up a new group to start tracking shared expenses.</p>
-
-    <form method="post" novalidate>
+<div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><span>Create group</span></div>
+<section class="form-shell">
+    <div class="form-heading">
+        <span class="eyebrow">New group</span>
+        <h1>Create a group</h1>
+        <p>Bring everyone together and keep shared expenses organised.</p>
+    </div>
+    <form method="post" novalidate class="stack-form">
         {{ form.hidden_tag() }}
-
-        <p>
-            {{ form.name.label }}
-            {{ form.name(class="form-control", size=32) }}
-            {% for error in form.name.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>
-            {{ form.description.label }}
-            {{ form.description(class="form-control", rows=3) }}
-            {% for error in form.description.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>
-            {{ form.currency.label }}
-            {{ form.currency(class="form-control") }}
-            {% for error in form.currency.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <div class="button-row">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a>
-        </div>
+        <div class="field">{{ form.name.label }}{{ form.name(class="form-control", placeholder="e.g. Queenstown weekend") }}{% for error in form.name.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+        <div class="field">{{ form.description.label }}{{ form.description(class="form-control", rows=3, placeholder="What is this group for?") }}{% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+        <div class="field">{{ form.currency.label }}{{ form.currency(class="form-control") }}{% for error in form.currency.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+        <div class="button-row">{{ form.submit(class="btn btn-primary") }}<a href="{{ url_for('home.home') }}" class="btn btn-secondary">Cancel</a></div>
     </form>
+</section>
 {% endblock %}
