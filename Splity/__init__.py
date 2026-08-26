@@ -1,5 +1,6 @@
 # /Splity_flask/Splity/__init__.py
 
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask
 from Splity.adapters.database import init_db
 from config import Config
@@ -13,6 +14,7 @@ csrf = CSRFProtect()
 
 def create_app(test_config=None):
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     app.config.from_object(Config)
     if test_config:
         app.config.update(test_config)
