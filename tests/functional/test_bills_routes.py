@@ -76,4 +76,4 @@ def test_delete_bill_requires_creator_or_owner(authenticated_client):
         follow_redirects=True,
     )
 
-    assert "not authorised" in response.get_data(as_text=True).lower()
+    assert "not a member" in response.get_data(as_text=True).lower()
