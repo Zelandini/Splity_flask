@@ -1,26 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}Log in · Splity{% endblock %}
 {% block content %}
-<section class="form-shell form-shell--narrow">
-    <div class="form-heading">
-        <span class="eyebrow">Welcome back</span>
-        <h1>Log in to Splity</h1>
-        <p>Continue managing your groups and shared expenses.</p>
-    </div>
-    <form method="post" novalidate class="stack-form">
-        {{ form.hidden_tag() }}
-        <div class="field">
-            <label for="{{ form.username.id }}">Username</label>
-            {{ form.username(class="form-control", autocomplete="username") }}
-            {% for error in form.username.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-        </div>
-        <div class="field">
-            <label for="{{ form.password.id }}">Password</label>
-            {{ form.password(class="form-control", autocomplete="current-password") }}
-            {% for error in form.password.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-        </div>
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
-    <p class="form-footer">New to Splity? <a href="{{ url_for('authentication.register') }}" class="text-link">Create an account</a></p>
+<section class="login-shell">
+ <div class="login-mark">S</div><h1>Welcome to Splity</h1><p>Sign in to split expenses with your friends.</p>
+ {% if google_ready %}
+  <a href="{{ url_for('authentication.google_login') }}" class="google-button"><span class="google-g">G</span>Continue with Google</a>
+ {% else %}
+  <div class="dev-notice"><strong>Local development login</strong><span>Add Google credentials later to enable Google sign-in.</span></div>
+  <form method="post" novalidate class="stack-form">{{ form.hidden_tag() }}
+   <div class="field">{{ form.username.label }}{{ form.username(class="form-control") }}</div>
+   <div class="field">{{ form.password.label }}{{ form.password(class="form-control") }}</div>
+   {{ form.submit(class="btn btn-primary") }}
+  </form>
+  <p class="form-footer">Need a test account? <a class="text-link" href="{{ url_for('authentication.register') }}">Create one</a></p>
+ {% endif %}
 </section>
 {% endblock %}
