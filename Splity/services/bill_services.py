@@ -1,129 +1,146 @@
-# /Splity_flask/Splity/services/bill_services.py
-from typing import List
-from collections import defaultdict
-
-from Splity.adapters.orm import BillParticipantORM
-from Splity.adapters.repository import BillRepository, BillParticipantRepository, UserRepository, GroupRepository
-from Splity.domainmodel.models import Bill, User, BillParticipant
-from Splity.services import groups_services
-
+from decimal import Decimal, ROUND_DOWN
+from Splity.adapters.repository import BillRepository, BillParticipantRepository, UserRepository, GroupRepository, RepaymentRepository
+from Splity.domainmodel.models import Bill
 
 class BillServiceException(Exception):
     pass
 
-def add_bill_service(user_id: int,description: str, amount: float, owe_members:List[int], group_id: int) -> Bill:
-    bill_repo = BillRepository()
-    bill = bill_repo.get_bill_by_name_and_group_id(description, group_id)
-    bill_participant_repo = BillParticipantRepository()
-    if bill:
-        if description.lower() == bill.description.lower():
-            raise BillServiceException(f"You already have a bill with the same description '{bill.description}'.")
-    if not description or not description.strip():
-        raise BillServiceException("Bill description cannot be empty.")
-    try:
-        new_bill = Bill(user_id=user_id, description=description, amount=amount, group_id=group_id)
-        # FIX 1: Capture the ID returned by the database
-        created_bill_id = bill_repo.create(new_bill)
+def _member_ids(group_id):
+    return {member.id for member in GroupRepository().get_group_members(group_id)}
 
-        # FIX 2: Use the new ID to fetch the date and properties from the DB
-        # This also avoids the 'NoneType' has no attribute 'date' error
-        saved_bill = bill_repo.get_by_id(created_bill_id)
+def _require_member(group_id, user_id):
+    if user_id not in _member_ids(group_id):
+        raise BillServiceException("You are not a member of this group.")
 
-        # FIX 3: Use the captured ID when adding participants
-        split_amount = amount / len(owe_members) if owe_members else 0
-        for participant_id in owe_members:
-            bill_participant_repo.add_participant(bill_id=saved_bill.id,
-                                                  user_id=participant_id,
-                                                  amount_owed=split_amount)
-        return new_bill
-    except Exception as e:
-        raise BillServiceException(f"Failed to create group: {str(e)}")
+def _normalise_shares(amount, participant_ids, split_mode, custom_amounts=None):
+    ids=list(dict.fromkeys(int(i) for i in participant_ids))
+    if not ids:
+        raise BillServiceException("Select at least one person.")
+    total=Decimal(str(amount)).quantize(Decimal("0.01"))
+    if total <= 0:
+        raise BillServiceException("Amount must be greater than zero.")
+    if split_mode == "equal":
+        base=(total/len(ids)).quantize(Decimal("0.01"),rounding=ROUND_DOWN)
+        shares={uid:base for uid in ids}
+        shares[ids[-1]] += total-sum(shares.values())
+    else:
+        custom_amounts=custom_amounts or {}
+        try:
+            shares={uid:Decimal(str(custom_amounts[uid])).quantize(Decimal("0.01")) for uid in ids}
+        except (KeyError,TypeError,ValueError):
+            raise BillServiceException("Enter a custom amount for every selected person.")
+        if any(value < 0 for value in shares.values()):
+            raise BillServiceException("Custom amounts cannot be negative.")
+        if sum(shares.values()) != total:
+            raise BillServiceException("Custom amounts must add up to the total expense.")
+    return {uid:float(value) for uid,value in shares.items()}
 
-def delete_bill_service(bill_id: int, current_user_id: int, group_id: int) -> Bill:
-    bill_repo = BillRepository()
-    bill = bill_repo.get_by_id(bill_id)
+def add_bill_service(user_id, description, amount, owe_members, group_id, payer_id=None, split_mode="equal", custom_amounts=None):
+    _require_member(group_id,user_id)
+    members=_member_ids(group_id)
+    payer_id=int(payer_id or user_id)
+    participant_ids=[int(i) for i in owe_members]
+    if payer_id not in members or not set(participant_ids).issubset(members):
+        raise BillServiceException("The payer and participants must belong to this group.")
+    if BillRepository().get_bill_by_name_and_group_id(description,group_id):
+        raise BillServiceException(f"An expense named '{description}' already exists in this group.")
+    shares=_normalise_shares(amount,participant_ids,split_mode,custom_amounts)
+    bill=Bill(user_id=payer_id,created_by_id=user_id,description=description.strip(),amount=float(amount),group_id=group_id)
+    bill_id=BillRepository().create(bill)
+    BillParticipantRepository().replace_participants(bill_id,shares)
+    return BillRepository().get_by_id(bill_id)
+
+def edit_bill_service(bill_id, requester_id, description, amount, participant_ids, payer_id, split_mode="equal", custom_amounts=None):
+    bill=BillRepository().get_by_id(bill_id)
     if not bill:
-        raise BillServiceException(f"Bill with id {bill_id} does not exist.")
-    group_repo = GroupRepository()
-    group = group_repo.get_by_id(group_id)
-    if current_user_id != bill.user_id:
-        if current_user_id != group.creator_id:
-            raise BillServiceException(f"User not authorised to delete bill.")
-    try:
-        success = bill_repo.delete_bill(bill_id=bill.id)
-        if not success:
-            raise BillServiceException("Bill was not deleted.")
-        return bill
-    except Exception as e:
-        raise BillServiceException(f"Failed to delete bill: {str(e)}")
+        raise BillServiceException("Expense not found.")
+    _require_member(bill.group_id,requester_id)
+    group=GroupRepository().get_by_id(bill.group_id)
+    if requester_id not in {bill.created_by_id,group.creator_id}:
+        raise BillServiceException("Only the person who recorded this expense or the group owner can edit it.")
+    members=_member_ids(bill.group_id)
+    ids=[int(i) for i in participant_ids]
+    if int(payer_id) not in members or not set(ids).issubset(members):
+        raise BillServiceException("The payer and participants must belong to this group.")
+    duplicate=BillRepository().get_bill_by_name_and_group_id(description,bill.group_id)
+    if duplicate and duplicate.id != bill.id:
+        raise BillServiceException("Another expense already uses that description.")
+    shares=_normalise_shares(amount,ids,split_mode,custom_amounts)
+    BillRepository().update(bill.id,int(payer_id),description.strip(),float(amount))
+    BillParticipantRepository().replace_participants(bill.id,shares)
+    return BillRepository().get_by_id(bill.id)
 
-def get_user_by_id_service(user_id: int) -> User:
-    user_repo = UserRepository()
-    user = user_repo.get_by_id(user_id)
-    return user
+def delete_bill_service(bill_id,current_user_id,group_id):
+    bill=BillRepository().get_by_id(bill_id)
+    group=GroupRepository().get_by_id(group_id)
+    if not bill or bill.group_id != group_id:
+        raise BillServiceException("Expense not found.")
+    _require_member(group_id,current_user_id)
+    if current_user_id not in {bill.created_by_id,group.creator_id}:
+        raise BillServiceException("User not authorised to delete expense.")
+    BillRepository().delete_bill(bill_id)
+    return bill
 
-def get_bills_and_creators_service(group_id: int):
-    bills = groups_services.get_all_bills(group_id)
-    bill_data = []
+def get_bills_and_creators_service(group_id):
+    repo=UserRepository()
+    return [(bill,repo.get_by_id(bill.user_id)) for bill in BillRepository().get_all_bills(group_id)]
+
+def total_group_spending(group_id):
+    return round(sum(bill.amount for bill in BillRepository().get_all_bills(group_id)),2)
+
+def calculate_net_balance(users,bills,participants):
+    balances={user.id:[user.name,0.0] for user in users}
     for bill in bills:
-        creator = get_user_by_id_service(bill.user_id)
-        bill_data.append((bill, creator))
-    return bill_data
-
-def total_group_spending(group_id: int):
-    bills = groups_services.get_all_bills(group_id)
-    total = sum([bill.amount for bill in bills])
-    print(total)
-    return total
-
-def total_user_spending(group_id: int, user_id: int):
-    bills_repo = BillRepository()
-    bills = bills_repo.get_all_bills_in_group_by_user(group_id, user_id)
-    if not bills:
-        return 0
-    return sum([bill.amount for bill in bills])
-
-def get_all_bill_participants_service(bill_id: int):
-    bills_repo = BillParticipantRepository()
-    bill_participants = bills_repo.all_participants_in_group(bill_id)
-    if not bill_participants:
-        return []
-    return bill_participants
-
-
-def get_user_net_balances(users_net_balance: dict, user_id: int) -> dict:
-    if users_net_balance[user_id]:
-        return users_net_balance[user_id]
-    return {}
-
-
-
-def calculate_net_balance(users, bills, participants):
-    user_balances = {user.id: [user.name, 0.0] for user in users}
-    for bill in bills:
-        if bill.user_id in user_balances:
-            user_balances[bill.user_id][1] += bill.amount
+        if bill.user_id in balances: balances[bill.user_id][1]+=bill.amount
     for participant in participants:
-        if participant.user_id in user_balances:
-            user_balances[participant.user_id][1] -= participant.amount_owed
-    return user_balances
+        if participant.user_id in balances: balances[participant.user_id][1]-=participant.amount_owed
+    return balances
 
+def settling_algorithm(group_id):
+    users=GroupRepository().get_group_members(group_id)
+    bills=BillRepository().get_all_bills(group_id)
+    participant_repo=BillParticipantRepository()
+    participants=[]
+    for bill in bills: participants.extend(participant_repo.all_participants_in_group(bill.id))
+    balances=calculate_net_balance(users,bills,participants)
+    for payment in RepaymentRepository().get_confirmed_for_group(group_id):
+        if payment.payer_id in balances: balances[payment.payer_id][1]+=payment.amount
+        if payment.payee_id in balances: balances[payment.payee_id][1]-=payment.amount
+    debtors=[[uid,data[0],-data[1]] for uid,data in balances.items() if data[1] < -0.005]
+    creditors=[[uid,data[0],data[1]] for uid,data in balances.items() if data[1] > 0.005]
+    settlements=[]
+    i=j=0
+    while i<len(debtors) and j<len(creditors):
+        amount=round(min(debtors[i][2],creditors[j][2]),2)
+        settlements.append((debtors[i][1],amount,creditors[j][1],debtors[i][0],creditors[j][0]))
+        debtors[i][2]-=amount; creditors[j][2]-=amount
+        if debtors[i][2] <= .005: i+=1
+        if creditors[j][2] <= .005: j+=1
+    return settlements,balances
 
-def settling_algorithm(group_id: int):
-    users = groups_services.get_group_members(group_id)
-    bills = groups_services.get_all_bills(group_id)
-    participants = []
-    for bill in bills:
-        participants += get_all_bill_participants_service(bill.id)
-    final_dict = calculate_net_balance(users, bills, participants)
-    net_balances = final_dict
-    balances = {item[0]: item[1] for item in final_dict.values()}
-    texts = []
-    while max(balances.values()) > 0.01:
-        debtor_name, debtor_bal = min(balances.items(), key=lambda x: x[1])
-        creditor_name, creditor_bal = max(balances.items(), key=lambda x: x[1])
-        amount_to_transfer = min(abs(debtor_bal), creditor_bal)
-        balances[debtor_name] += amount_to_transfer
-        balances[creditor_name] -= amount_to_transfer
-        texts.append([debtor_name, round(amount_to_transfer, 2), creditor_name])
-    return texts, net_balances
+def get_user_net_balances(balances,user_id):
+    return balances.get(user_id,["Unknown",0.0])
+
+def record_repayment(group_id,payer_id,payee_id,amount):
+    _require_member(group_id,payer_id)
+    _require_member(group_id,payee_id)
+    if payer_id==payee_id: raise BillServiceException("You cannot repay yourself.")
+    settlements,_=settling_algorithm(group_id)
+    match=next((s for s in settlements if s[3]==payer_id and s[4]==payee_id),None)
+    if not match: raise BillServiceException("There is no outstanding payment to this person.")
+    amount=float(amount)
+    if amount <= 0 or amount > match[1]+.005:
+        raise BillServiceException(f"Amount must be between 0 and {match[1]:.2f}.")
+    return RepaymentRepository().create(group_id,payer_id,payee_id,amount)
+
+def confirm_repayment(repayment_id,current_user_id):
+    repayment=RepaymentRepository().get_by_id(repayment_id)
+    if not repayment: raise BillServiceException("Repayment not found.")
+    if repayment.payee_id != current_user_id: raise BillServiceException("Only the receiver can confirm this repayment.")
+    if repayment.status != "pending": raise BillServiceException("This repayment has already been processed.")
+    RepaymentRepository().confirm(repayment_id)
+    return repayment
+
+def get_repayments(group_id):
+    user_repo=UserRepository()
+    return [(r,user_repo.get_by_id(r.payer_id),user_repo.get_by_id(r.payee_id)) for r in RepaymentRepository().get_for_group(group_id)]
