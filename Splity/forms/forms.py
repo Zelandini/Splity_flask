@@ -47,3 +47,7 @@ class RepaymentForm(FlaskForm):
     payee_id=SelectField("Paid to",coerce=int,validators=[DataRequired()])
     amount=DecimalField("Amount",validators=[DataRequired(),NumberRange(min=0.01)])
     submit=SubmitField("I have paid")
+
+class ProfileNameForm(FlaskForm):
+    name=StringField("First and last name",validators=[DataRequired(),Length(min=2,max=100)])
+    submit=SubmitField("Continue")
