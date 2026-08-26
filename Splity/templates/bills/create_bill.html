@@ -1,45 +1,39 @@
 {% extends 'base.html' %}
 
-{% block title %}Splity - Add Bill{% endblock %}
+{% block title %}Add expense · Splity{% endblock %}
 
 {% block content %}
-    <h1>Add Bill</h1>
-    <p class="page-intro">Record a new expense that will be split among group members.</p>
+    <div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><a href="{{ url_for('home.group_details', group_id=group_id) }}">Group</a><span>›</span><span>Add expense</span></div>
 
-    <form method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.description.label }}
-            {{ form.description(class="form-control", rows=3) }}
-            {% for error in form.description.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>
-            {{ form.amount.label }} ({{ currency }})
-            {{ form.amount(class="form-control") }}
-            {% for error in form.amount.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p><strong>Paid by YOU, split among:</strong></p>
-        <p>
-            {{ form.names.label }}
-            {{ form.names(class="form-control") }}
-            {% if form.names.errors %}
-                <ul>
-                    {% for error in form.names.errors %}
-                        <li class="form-error">{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </p>
-
-        <div class="button-row">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('home.group_details', group_id=group_id) }}" class="btn btn-secondary">Cancel</a>
+    <section class="form-shell form-shell--narrow">
+        <div class="form-heading">
+            <span class="eyebrow">New shared expense</span>
+            <h1>Add an expense</h1>
+            <p>Record what you paid and choose who should share it.</p>
         </div>
-    </form>
+
+        <form method="post" novalidate class="stack-form">
+            {{ form.hidden_tag() }}
+            <div class="field">
+                {{ form.description.label }}
+                {{ form.description(class="form-control", rows=2, placeholder="e.g. Dinner, fuel or groceries") }}
+                {% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="field">
+                <label for="{{ form.amount.id }}">Amount <span class="field-suffix">{{ currency }}</span></label>
+                {{ form.amount(class="form-control amount-input", inputmode="decimal", placeholder="0.00") }}
+                {% for error in form.amount.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="field">
+                <div class="field-note"><strong>Paid by you</strong><span>The expense will be split between the selected members.</span></div>
+                {{ form.names.label }}
+                {{ form.names(class="form-control member-select") }}
+                {% for error in form.names.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="button-row">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('home.group_details', group_id=group_id) }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
 {% endblock %}
