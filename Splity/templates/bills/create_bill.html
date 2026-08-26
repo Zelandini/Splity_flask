@@ -1,39 +1,60 @@
 {% extends 'base.html' %}
-
-{% block title %}Add expense · Splity{% endblock %}
-
+{% block title %}{% if editing %}Edit{% else %}Add{% endif %} expense · Splity{% endblock %}
 {% block content %}
-    <div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><a href="{{ url_for('home.group_details', group_id=group_id) }}">Group</a><span>›</span><span>Add expense</span></div>
-
-    <section class="form-shell form-shell--narrow">
-        <div class="form-heading">
-            <span class="eyebrow">New shared expense</span>
-            <h1>Add an expense</h1>
-            <p>Record what you paid and choose who should share it.</p>
+<div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><a href="{{ url_for('home.group_details', group_id=group_id) }}">Group</a><span>›</span><span>{% if editing %}Edit{% else %}Add{% endif %} expense</span></div>
+<section class="form-shell form-shell--narrow">
+    <div class="form-heading">
+        <span class="eyebrow">Shared expense</span>
+        <h1>{% if editing %}Edit expense{% else %}Add an expense{% endif %}</h1>
+        <p>Choose who paid and exactly who should share the cost.</p>
+    </div>
+    <form method="post" novalidate class="stack-form" id="expense-form">
+        {{ form.hidden_tag() }}
+        <div class="field">{{ form.description.label }}{{ form.description(class="form-control",placeholder="e.g. Dinner or groceries") }}{% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+        <div class="field"><label for="{{ form.amount.id }}">Total amount <span class="field-suffix">{{ currency }}</span></label>{{ form.amount(class="form-control amount-input",inputmode="decimal",placeholder="0.00") }}{% for error in form.amount.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+        <div class="field">{{ form.payer_id.label }}{{ form.payer_id(class="form-control") }}</div>
+        <div class="field">
+            {{ form.names.label }}
+            <div class="checkbox-panel">{{ form.names }}</div>
+            {% for error in form.names.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
         </div>
-
-        <form method="post" novalidate class="stack-form">
-            {{ form.hidden_tag() }}
-            <div class="field">
-                {{ form.description.label }}
-                {{ form.description(class="form-control", rows=2, placeholder="e.g. Dinner, fuel or groceries") }}
-                {% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-            </div>
-            <div class="field">
-                <label for="{{ form.amount.id }}">Amount <span class="field-suffix">{{ currency }}</span></label>
-                {{ form.amount(class="form-control amount-input", inputmode="decimal", placeholder="0.00") }}
-                {% for error in form.amount.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-            </div>
-            <div class="field">
-                <div class="field-note"><strong>Paid by you</strong><span>The expense will be split between the selected members.</span></div>
-                {{ form.names.label }}
-                {{ form.names(class="form-control member-select") }}
-                {% for error in form.names.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-            </div>
-            <div class="button-row">
-                {{ form.submit(class="btn btn-primary") }}
-                <a href="{{ url_for('home.group_details', group_id=group_id) }}" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </section>
+        <div class="field">
+            {{ form.split_mode.label }}
+            <div class="split-options">{{ form.split_mode }}</div>
+        </div>
+        <div id="custom-splits" class="custom-splits" hidden>
+            <div class="field-note"><strong>Custom shares</strong><span>These amounts must add up to the total expense.</span></div>
+            {% for member in members %}
+                <label class="custom-row" data-member="{{ member.id }}">
+                    <span>{{ member.name }}</span>
+                    <span class="money-field"><small>{{ currency }}</small><input class="form-control custom-amount" type="number" min="0" step="0.01" inputmode="decimal" name="custom_amount_{{ member.id }}" value="{{ existing_shares.get(member.id, '') if existing_shares else '' }}"></span>
+                </label>
+            {% endfor %}
+            <p class="split-total">Assigned: <strong id="assigned-total">0.00</strong> {{ currency }}</p>
+        </div>
+        <div class="button-row">{{ form.submit(class="btn btn-primary") }}<a href="{{ url_for('home.group_details',group_id=group_id) }}" class="btn btn-secondary">Cancel</a></div>
+    </form>
+</section>
+<script>
+(function(){
+ const modeInputs=document.querySelectorAll('input[name="split_mode"]');
+ const custom=document.getElementById('custom-splits');
+ const participantInputs=document.querySelectorAll('input[name="names"]');
+ const customRows=document.querySelectorAll('.custom-row');
+ const amountInputs=document.querySelectorAll('.custom-amount');
+ const total=document.getElementById('assigned-total');
+ function refresh(){
+   const customMode=document.querySelector('input[name="split_mode"]:checked')?.value==='custom';
+   custom.hidden=!customMode;
+   const selected=new Set(Array.from(participantInputs).filter(i=>i.checked).map(i=>i.value));
+   customRows.forEach(row=>row.hidden=!selected.has(row.dataset.member));
+   let sum=0; amountInputs.forEach(input=>{if(!input.closest('.custom-row').hidden) sum+=Number(input.value||0)});
+   total.textContent=sum.toFixed(2);
+ }
+ modeInputs.forEach(i=>i.addEventListener('change',refresh));
+ participantInputs.forEach(i=>i.addEventListener('change',refresh));
+ amountInputs.forEach(i=>i.addEventListener('input',refresh));
+ refresh();
+})();
+</script>
 {% endblock %}
