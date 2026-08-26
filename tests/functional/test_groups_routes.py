@@ -45,7 +45,7 @@ def test_join_group_with_valid_code(app, authenticated_client):
     group = groups[0]
 
     # 3. Logout and create a SECOND user via the registration endpoint
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
 
     authenticated_client.post('/register', data={
         "name": "Second User", "username": "seconduser",
@@ -116,7 +116,7 @@ def test_cannot_view_other_users_group(app, authenticated_client):
     group = groups[0]
 
     # 2. Logout and create a second user via registration endpoint
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
 
     authenticated_client.post('/register', data={
         "name": "Other User", "username": "otheruser",
@@ -164,7 +164,7 @@ def test_join_group_invalid_code_format(authenticated_client):
 
     page_output = response.get_data(as_text=True)
     # Check for the WTForms validation error (case-insensitive)
-    assert "field must be between 1 and 10 characters long" in page_output.lower()
+    assert "field must be exactly 6 characters long" in page_output.lower()
 
 
 def test_create_duplicate_group_name_fails(authenticated_client):
@@ -209,7 +209,7 @@ def test_user_cannot_view_unjoined_group_details(app, authenticated_client):
     private_group = groups[0]
 
     # 2. Logout and create a second user via registration endpoint
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
 
     authenticated_client.post('/register', data={
         "name": "User Two", "username": "usertwo",
@@ -256,7 +256,7 @@ def test_different_users_can_create_groups_with_same_name(app, authenticated_cli
     user1_group_id = user1_groups[0].id
 
     # 2. Logout and create User2 via registration endpoint
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
 
     authenticated_client.post('/register', data={
         "name": "User Two", "username": "usertwo",
@@ -318,7 +318,7 @@ def test_user_joins_group_then_creates_group_with_same_name(app, authenticated_c
     invite_code = user1_group.invite_code
 
     # 2. Create and login as User2 via registration endpoint
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
 
     authenticated_client.post('/register', data={
         "name": "User Two", "username": "usertwo",
@@ -460,7 +460,7 @@ def test_non_creator_cannot_edit_group(app, authenticated_client):
         group_id = group.id
 
     # 2. Arrange: Switch to a different user
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
 
     # Create and login another user before trying to edit
     authenticated_client.post('/register', data={
@@ -506,7 +506,7 @@ def test_leave_group_non_creator(authenticated_client, app):
     creator = user_repo.get_by_username("testuser")
     group = group_repo.get_user_groups(creator.id)[0]
 
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
     authenticated_client.post('/register', data={
         "name": "Other User", "username": "otheruser",
         "email": "other@test.com", "password": "Password123",
@@ -518,7 +518,7 @@ def test_leave_group_non_creator(authenticated_client, app):
     }, follow_redirects=True)
     authenticated_client.post('/join_group', data={"invite_code": group.invite_code}, follow_redirects=True)
 
-    response = authenticated_client.get(f'/group/{group.id}/leave', follow_redirects=True)
+    response = authenticated_client.post(f'/group/{group.id}/leave', follow_redirects=True)
     assert "successfully leave" in response.get_data(as_text=True).lower()
 
 
@@ -534,7 +534,7 @@ def test_delete_group_requires_creator(authenticated_client):
     creator = user_repo.get_by_username("testuser")
     group = group_repo.get_user_groups(creator.id)[0]
 
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
     authenticated_client.post('/register', data={
         "name": "Other User", "username": "otheruser",
         "email": "other@test.com", "password": "Password123",
@@ -545,5 +545,5 @@ def test_delete_group_requires_creator(authenticated_client):
         "password": "Password123"
     }, follow_redirects=True)
 
-    response = authenticated_client.get(f'/group/{group.id}/delete', follow_redirects=True)
+    response = authenticated_client.post(f'/group/{group.id}/delete', follow_redirects=True)
     assert "not authorised" in response.get_data(as_text=True).lower()
