@@ -1,88 +1,57 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ group.name }} · Splity{% endblock %}
-
 {% block content %}
-    <div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><span>{{ group.name }}</span></div>
-
-    <section class="group-hero">
-        <div>
-            <span class="eyebrow">{{ group.currency }} group</span>
-            <h1>{{ group.name }}</h1>
-            <p class="page-intro">{{ group.description or "Shared expenses and balances." }}</p>
-        </div>
-        <div class="hero-actions">
-            <a href="{{ url_for('bills.create_bill', group_id=group.id) }}" class="btn btn-primary">Add expense</a>
-            {% if current_user.id == group.creator_id %}
-                <a href="{{ url_for('home.edit_group', group_id=group.id) }}" class="btn btn-secondary">Group settings</a>
-            {% endif %}
-        </div>
-    </section>
-
-    <div class="summary-grid">
-        <article class="metric-card">
-            <span>Total group spend</span>
-            <strong>{{ total_group_spending }} <small>{{ group.currency }}</small></strong>
-        </article>
-        <article class="metric-card {% if user_net_balance < 0 %}metric-card--negative{% else %}metric-card--positive{% endif %}">
-            <span>Your balance</span>
-            <strong>{{ user_net_balance }} <small>{{ group.currency }}</small></strong>
-            <small>{% if user_net_balance < 0 %}You currently owe{% elif user_net_balance > 0 %}You are currently owed{% else %}You are all settled{% endif %}</small>
-        </article>
-        <button class="share-card copy-container" type="button" onclick="copyToClipboard('{{ group.invite_code }}', this)">
-            <span>Invite friends</span>
-            <strong>{{ group.invite_code }}</strong>
-            <small class="copy-hint">Tap to copy code</small>
-        </button>
+<div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><span>{{ group.name }}</span></div>
+<section class="group-hero">
+ <div><span class="eyebrow">{{ group.currency }} group</span><h1>{{ group.name }}</h1><p class="page-intro">{{ group.description }}</p></div>
+ <div class="hero-actions"><a href="{{ url_for('bills.create_bill',group_id=group.id) }}" class="btn btn-primary">Add expense</a>{% if current_user.id==group.creator_id %}<a href="{{ url_for('home.edit_group',group_id=group.id) }}" class="btn btn-secondary">Settings</a>{% endif %}</div>
+</section>
+<div class="summary-grid">
+ <article class="metric-card"><span>Total group spend</span><strong>{{ total_group_spending }} <small>{{ group.currency }}</small></strong></article>
+ <article class="metric-card {% if user_net_balance<0 %}metric-card--negative{% else %}metric-card--positive{% endif %}"><span>Your balance</span><strong>{{ user_net_balance }} <small>{{ group.currency }}</small></strong><small>{% if user_net_balance<0 %}You owe{% elif user_net_balance>0 %}You are owed{% else %}All settled{% endif %}</small></article>
+ <button class="share-card copy-container" type="button" onclick="copyToClipboard('{{ group.invite_code }}',this)"><span>Invite friends</span><strong>{{ group.invite_code }}</strong><small class="copy-hint">Tap to copy code</small></button>
+</div>
+<div class="content-grid">
+ <section class="content-card">
+  <div class="section-heading section-heading--compact"><div><span class="eyebrow">Next steps</span><h2>Settle up</h2></div></div>
+  {% if settle_payments %}
+   <div class="transaction-list">
+   {% for s in settle_payments %}
+    <div class="transaction-row">
+     <div class="transaction-avatar">{{ s[0][:1]|upper }}</div>
+     <p><strong>{{ s[0] }}</strong> pays <strong>{{ s[2] }}</strong></p><span>{{ s[1] }} {{ group.currency }}</span>
     </div>
-
-    <div class="content-grid">
-        <section class="content-card">
-            <div class="section-heading section-heading--compact">
-                <div><span class="eyebrow">Next steps</span><h2>Settle up</h2></div>
-            </div>
-            {% if settle_payments %}
-                <div class="transaction-list">
-                    {% for s in settle_payments %}
-                        <div class="transaction-row">
-                            <div class="transaction-avatar">{{ s[0][:1]|upper }}</div>
-                            <p><strong>{{ s[0] }}</strong> pays <strong>{{ s[2] }}</strong></p>
-                            <span>{{ s[1] }} {{ group.currency }}</span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="inline-empty"><span>✓</span><div><strong>Everyone is even</strong><p>No payments are needed right now.</p></div></div>
-            {% endif %}
-        </section>
-
-        <section class="content-card">
-            <div class="section-heading section-heading--compact">
-                <div><span class="eyebrow">Activity</span><h2>Recent expenses</h2></div>
-                <a href="{{ url_for('bills.create_bill', group_id=group.id) }}" class="text-link">Add new</a>
-            </div>
-            {% if bill_data %}
-                <div class="expense-list">
-                    {% for bill, creator in bill_data %}
-                        <article class="expense-row">
-                            <div class="expense-icon">{{ bill.description[:1]|upper }}</div>
-                            <div class="expense-row__body">
-                                <strong>{{ bill.description }}</strong>
-                                <span>Paid by {{ creator.name }}</span>
-                            </div>
-                            <div class="expense-row__amount">
-                                <strong>{{ bill.amount }}</strong>
-                                <span>{{ group.currency }}</span>
-                            </div>
-                            {% if current_user.id == creator.id or current_user.id == group.creator_id %}
-                                <a href="{{ url_for('bills.delete_bill', bill_id=bill.id, group_id=group.id) }}" class="icon-action icon-action--danger" aria-label="Delete {{ bill.description }}">×</a>
-                            {% endif %}
-                        </article>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="inline-empty"><span>＋</span><div><strong>No expenses yet</strong><p>Add the first expense for this group.</p></div></div>
-            {% endif %}
-        </section>
-    </div>
+    {% if s[3]==current_user.id %}
+     <form method="post" action="{{ url_for('bills.repay',group_id=group.id) }}" class="repay-form">
+      {{ repayment_form.hidden_tag() }}<input type="hidden" name="payee_id" value="{{ s[4] }}"><input class="form-control" type="number" name="amount" min="0.01" max="{{ s[1] }}" step="0.01" value="{{ s[1] }}"><button class="btn btn-primary btn-small" type="submit">I’ve paid</button>
+     </form>
+    {% endif %}
+   {% endfor %}
+   </div>
+  {% else %}<div class="inline-empty"><span>✓</span><div><strong>Everyone is even</strong><p>No confirmed payments are outstanding.</p></div></div>{% endif %}
+ </section>
+ <section class="content-card">
+  <div class="section-heading section-heading--compact"><div><span class="eyebrow">Activity</span><h2>Expenses</h2></div><a href="{{ url_for('bills.create_bill',group_id=group.id) }}" class="text-link">Add new</a></div>
+  {% if bill_data %}<div class="expense-list">{% for bill,payer in bill_data %}
+   <article class="expense-row"><div class="expense-icon">{{ bill.description[:1]|upper }}</div><div class="expense-row__body"><strong>{{ bill.description }}</strong><span>Paid by {{ payer.name }}</span></div><div class="expense-row__amount"><strong>{{ bill.amount }}</strong><span>{{ group.currency }}</span></div>
+   {% if current_user.id==bill.created_by_id or current_user.id==group.creator_id %}
+    <a href="{{ url_for('bills.edit_bill',group_id=group.id,bill_id=bill.id) }}" class="icon-action" aria-label="Edit">✎</a>
+    <form method="post" action="{{ url_for('bills.delete_bill',group_id=group.id,bill_id=bill.id) }}" onsubmit="return confirm('Delete this expense? This cannot be undone.')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="icon-action icon-action--danger" type="submit" aria-label="Delete">×</button></form>
+   {% endif %}</article>
+  {% endfor %}</div>{% else %}<div class="inline-empty"><span>＋</span><div><strong>No expenses yet</strong><p>Add the first shared expense.</p></div></div>{% endif %}
+ </section>
+</div>
+<section class="content-card history-card">
+ <div class="section-heading section-heading--compact"><div><span class="eyebrow">Permanent record</span><h2>Repayment history</h2></div></div>
+ {% if repayments %}<div class="repayment-list">{% for repayment,payer,payee in repayments %}
+  <div class="repayment-row"><div><strong>{{ payer.name }} → {{ payee.name }}</strong><span>{{ repayment.amount }} {{ group.currency }}</span></div>
+   {% if repayment.status=="pending" and repayment.payee_id==current_user.id %}
+    <form method="post" action="{{ url_for('bills.confirm_repayment',repayment_id=repayment.id) }}" onsubmit="return confirm('Confirm that you received this repayment?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-primary btn-small" type="submit">Confirm received</button></form>
+   {% else %}<span class="status-pill status-pill--{{ repayment.status }}">{{ repayment.status|capitalize }}</span>{% endif %}
+  </div>
+ {% endfor %}</div>{% else %}<p class="muted">No repayments recorded yet.</p>{% endif %}
+</section>
+{% if current_user.id!=group.creator_id %}
+<section class="danger-zone"><div><strong>Leave group</strong><p>You can leave only when your confirmed balance is zero. Expense history remains.</p></div><form method="post" action="{{ url_for('home.leave_group',group_id=group.id) }}" onsubmit="return confirm('Leave this group? Your existing history will remain.')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-secondary" type="submit">Leave group</button></form></section>
+{% endif %}
 {% endblock %}
