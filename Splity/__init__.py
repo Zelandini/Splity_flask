@@ -4,14 +4,19 @@ from flask import Flask
 from Splity.adapters.database import init_db
 from config import Config
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 
 
 # Create login manager
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
+    if test_config:
+        app.config.update(test_config)
+    csrf.init_app(app)
 
     # Initialise database
     init_db(app)
