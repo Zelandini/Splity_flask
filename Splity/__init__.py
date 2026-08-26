@@ -30,6 +30,7 @@ def create_app(test_config=None):
     app.register_blueprint(routes.home_blueprint)
 
     from .authentication import routes
+    routes.oauth.init_app(app)
     app.register_blueprint(routes.authentication_blueprint)
 
     from .bills import routes
