@@ -1,68 +1,26 @@
 {% extends 'base.html' %}
-
 {% block title %}Group settings · Splity{% endblock %}
-
 {% block content %}
-    <div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><a href="{{ url_for('home.group_details', group_id=group.id) }}">{{ group.name }}</a><span>›</span><span>Settings</span></div>
-
-    <section class="form-shell">
-        <div class="form-heading">
-            <span class="eyebrow">Group settings</span>
-            <h1>Edit {{ group.name }}</h1>
-            <p>Update the group information and manage its members.</p>
-        </div>
-
-        <form method="post" novalidate class="stack-form">
-            {{ form.hidden_tag() }}
-            <div class="field">
-                {{ form.name.label }}
-                {{ form.name(class="form-control", size=32) }}
-                {% for error in form.name.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-            </div>
-            <div class="field">
-                {{ form.description.label }}
-                {{ form.description(class="form-control", rows=3) }}
-                {% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
-            </div>
-            <div class="button-row">
-                {{ form.submit(class="btn btn-primary") }}
-                <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </section>
-{% endblock %}
-    <section class="content-card members-card">
-        <div class="section-heading section-heading--compact">
-            <div><span class="eyebrow">People</span><h2>Group members</h2></div>
-            {% if members %}<span class="count-pill">{{ members|length }}</span>{% endif %}
-        </div>
-        {% if members %}
-            <div class="member-list">
-                {% for member in members %}
-                    <div class="member-row">
-                        <div class="transaction-avatar">{{ member.name[:1]|upper }}</div>
-                        <div class="member-row__body"><strong>{{ member.name }}</strong><span>@{{ member.username }}</span></div>
-                        {% if member.id == group.creator_id %}
-                            <span class="role-pill">Owner</span>
-                        {% else %}
-                            <form method="post" action="{{ url_for('home.remove_user', group_id=group.id, user_id=member.id) }}" onsubmit="return confirm('Remove {{ member.name }}? This is allowed only when their confirmed balance is zero.')">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="text-button text-button--danger">Remove</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="muted">No members are in this group yet.</p>
-        {% endif %}
-    </section>
-{% endblock %}
-
-<section class="danger-zone">
-    <div><strong>Delete group</strong><p>This permanently removes the group. Ownership cannot be transferred.</p></div>
-    <form method="post" action="{{ url_for('home.delete_group', group_id=group.id) }}" onsubmit="return confirm('Permanently delete this group? This cannot be undone.')">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-danger">Delete group</button>
-    </form>
+<div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><a href="{{ url_for('home.group_details',group_id=group.id) }}">{{ group.name }}</a><span>›</span><span>Settings</span></div>
+<section class="form-shell">
+ <div class="form-heading"><span class="eyebrow">Group settings</span><h1>Edit {{ group.name }}</h1><p>Update the group information and manage its members.</p></div>
+ <form method="post" novalidate class="stack-form">{{ form.hidden_tag() }}
+  <div class="field">{{ form.name.label }}{{ form.name(class="form-control") }}{% for error in form.name.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+  <div class="field">{{ form.description.label }}{{ form.description(class="form-control",rows=3) }}{% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}</div>
+  <div class="button-row">{{ form.submit(class="btn btn-primary") }}<a href="{{ url_for('home.group_details',group_id=group.id) }}" class="btn btn-secondary">Cancel</a></div>
+ </form>
 </section>
+<section class="content-card members-card">
+ <div class="section-heading section-heading--compact"><div><span class="eyebrow">People</span><h2>Group members</h2></div><span class="count-pill">{{ members|length }}</span></div>
+ <div class="member-list">{% for member in members %}
+  <div class="member-row"><div class="transaction-avatar">{{ member.name[:1]|upper }}</div><div class="member-row__body"><strong>{{ member.name }}</strong><span>@{{ member.username }}</span></div>
+  {% if member.id==group.creator_id %}<span class="role-pill">Owner</span>{% else %}
+   <form method="post" action="{{ url_for('home.remove_user',group_id=group.id,user_id=member.id) }}" onsubmit="return confirm('Remove {{ member.name }}? Their confirmed balance must be zero.')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="text-button text-button--danger">Remove</button></form>
+  {% endif %}</div>
+ {% endfor %}</div>
+</section>
+<section class="danger-zone">
+ <div><strong>Delete group</strong><p>This permanently removes the group. Ownership cannot be transferred.</p></div>
+ <form method="post" action="{{ url_for('home.delete_group',group_id=group.id) }}" onsubmit="return confirm('Permanently delete this group? This cannot be undone.')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-danger">Delete group</button></form>
+</section>
+{% endblock %}
