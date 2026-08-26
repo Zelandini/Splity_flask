@@ -1,35 +1,26 @@
 {% extends 'base.html' %}
-
-{% block title %}Splity - Login{% endblock %}
-
+{% block title %}Log in · Splity{% endblock %}
 {% block content %}
-    <h1>Login</h1>
-    <p class="page-intro">Authentication required to access groups.</p>
-
-    <form method="post" novalidate>
+<section class="form-shell form-shell--narrow">
+    <div class="form-heading">
+        <span class="eyebrow">Welcome back</span>
+        <h1>Log in to Splity</h1>
+        <p>Continue managing your groups and shared expenses.</p>
+    </div>
+    <form method="post" novalidate class="stack-form">
         {{ form.hidden_tag() }}
-
-        <p>
-            <label>Username</label>
-            {{ form.username(class="form-control") }}
-            {% for error in form.username.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>
-            <label>Password</label>
-            {{ form.password(class="form-control") }}
-            {% for error in form.password.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <div class="button-row">
-            {{ form.submit(class="btn btn-primary") }}
+        <div class="field">
+            <label for="{{ form.username.id }}">Username</label>
+            {{ form.username(class="form-control", autocomplete="username") }}
+            {% for error in form.username.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
         </div>
+        <div class="field">
+            <label for="{{ form.password.id }}">Password</label>
+            {{ form.password(class="form-control", autocomplete="current-password") }}
+            {% for error in form.password.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
     </form>
-
-    <hr>
-    <p>New here? <a href="{{ url_for('authentication.register') }}" class="inline-link">Create an account</a></p>
+    <p class="form-footer">New to Splity? <a href="{{ url_for('authentication.register') }}" class="text-link">Create an account</a></p>
+</section>
 {% endblock %}
