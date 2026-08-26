@@ -60,7 +60,7 @@ def test_delete_bill_requires_creator_or_owner(authenticated_client):
     bill_repo = BillRepository()
     bill = bill_repo.get_bill_by_name_and_group_id("Snacks", group.id)
 
-    authenticated_client.get('/logout', follow_redirects=True)
+    authenticated_client.post('/logout', follow_redirects=True)
     authenticated_client.post('/register', data={
         "name": "Other User", "username": "otheruser",
         "email": "other@test.com", "password": "Password123",
@@ -71,7 +71,7 @@ def test_delete_bill_requires_creator_or_owner(authenticated_client):
         "password": "Password123"
     }, follow_redirects=True)
 
-    response = authenticated_client.get(
+    response = authenticated_client.post(
         f'/group/{group.id}/delete_bill/{bill.id}',
         follow_redirects=True,
     )
