@@ -1,39 +1,73 @@
 {% extends "base.html" %}
 
+{% block title %}Splity{% endblock %}
+
 {% block content %}
     {% if current_user.is_authenticated %}
-        <h1>Your Dashboard</h1>
-        <p class="page-intro">Welcome back, {{ current_user.name }}. Manage your group expenses below.</p>
+        <section class="hero hero--dashboard">
+            <div>
+                <span class="eyebrow">Your dashboard</span>
+                <h1>Welcome back, {{ current_user.name }}.</h1>
+                <p class="page-intro">Keep shared spending simple and see every group in one place.</p>
+            </div>
+            <div class="hero-actions">
+                <a href="{{ url_for('home.create_group') }}" class="btn btn-primary">Create group</a>
+                <a href="{{ url_for('home.join_group') }}" class="btn btn-secondary">Join with a code</a>
+            </div>
+        </section>
 
-        <div class="button-row">
-            <a href="{{ url_for('home.create_group') }}" class="btn btn-primary">Create New Group</a>
-            <a href="{{ url_for('home.join_group') }}" class="btn btn-secondary">Join Existing Group</a>
-        </div>
+        <section class="section-heading">
+            <div>
+                <span class="eyebrow">Shared expenses</span>
+                <h2>Your groups</h2>
+            </div>
+            {% if groups %}
+                <span class="count-pill">{{ groups|length }} active</span>
+            {% endif %}
+        </section>
 
-        <h2>Active Groups</h2>
         {% if groups %}
-            <ul>
-            {% for group in groups %}
-                <li>
-                    <div class="list-row">
-                        <div>
-                            <strong>{{ group.name }}</strong>
-                            <span class="list-meta">CODE: {{ group.invite_code }}</span>
+            <div class="group-grid">
+                {% for group in groups %}
+                    <a class="group-card" href="{{ url_for('home.group_details', group_id=group.id) }}">
+                        <div class="group-card__icon">{{ group.name[:1]|upper }}</div>
+                        <div class="group-card__body">
+                            <h3>{{ group.name }}</h3>
+                            <p>{{ group.description or "Shared expenses and balances" }}</p>
+                            <span class="group-card__meta">{{ group.currency }} · Code {{ group.invite_code }}</span>
                         </div>
-                        <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-primary btn-small">Open Group</a>
-                    </div>
-                </li>
-            {% endfor %}
-            </ul>
+                        <span class="group-card__arrow" aria-hidden="true">→</span>
+                    </a>
+                {% endfor %}
+            </div>
         {% else %}
-            <p>You are not currently in any groups.</p>
+            <section class="empty-state">
+                <div class="empty-state__icon">+</div>
+                <h2>Create your first group</h2>
+                <p>Start a group for a flat, trip, dinner or anything else you share.</p>
+                <a href="{{ url_for('home.create_group') }}" class="btn btn-primary">Create a group</a>
+            </section>
         {% endif %}
     {% else %}
-        <h1>Welcome to Splity.</h1>
-        <p class="page-intro">Modern. Rigid. Transparent. The professional way to split costs.</p>
-        <div class="button-row">
-            <a href="{{ url_for('authentication.login') }}" class="btn btn-primary">Login Now</a>
-            <a href="{{ url_for('authentication.register') }}" class="btn btn-secondary">Sign Up</a>
-        </div>
+        <section class="landing-hero">
+            <div class="landing-hero__copy">
+                <span class="eyebrow">Shared money, made simple</span>
+                <h1>Split expenses without the awkward maths.</h1>
+                <p>Keep track of group spending, understand who owes what, and settle up with fewer transfers.</p>
+                <div class="hero-actions">
+                    <a href="{{ url_for('authentication.register') }}" class="btn btn-primary">Start splitting</a>
+                    <a href="{{ url_for('authentication.login') }}" class="btn btn-secondary">I have an account</a>
+                </div>
+            </div>
+            <div class="balance-preview" aria-label="Example balance summary">
+                <span class="balance-preview__label">Weekend away</span>
+                <strong>You are owed</strong>
+                <span class="balance-preview__amount">$42.50</span>
+                <div class="avatar-row">
+                    <span>A</span><span>M</span><span>J</span>
+                    <small>3 friends</small>
+                </div>
+            </div>
+        </section>
     {% endif %}
 {% endblock %}
