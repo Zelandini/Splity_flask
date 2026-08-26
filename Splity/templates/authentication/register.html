@@ -1,52 +1,27 @@
 {% extends 'base.html' %}
-
-{% block title %}Splity - Sign Up{% endblock %}
-
+{% block title %}Create account · Splity{% endblock %}
 {% block content %}
-    <h1>Create New Account</h1>
-    <p class="page-intro">Join Splity and start managing your shared expenses.</p>
-
-    <form method="POST">
+<section class="form-shell form-shell--narrow">
+    <div class="form-heading">
+        <span class="eyebrow">Get started</span>
+        <h1>Create your account</h1>
+        <p>Set up Splity now; Google sign-in will replace this form in the next stage.</p>
+    </div>
+    <form method="post" novalidate class="stack-form">
         {{ form.hidden_tag() }}
-        <p>
-            {{ form.name.label }}
-            {{ form.name(size=32, class="form-control") }}
-            {% for error in form.name.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.username.label }}
-            {{ form.username(size=32, class="form-control") }}
-            {% for error in form.username.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.email.label }}
-            {{ form.email(size=32, class="form-control") }}
-            {% for error in form.email.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }}
-            {{ form.password(size=32, class="form-control") }}
-            {% for error in form.password.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password2.label }}
-            {{ form.password2(size=32, class="form-control") }}
-            {% for error in form.password2.errors %}
-                <span class="form-error">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.submit(class="btn btn-primary") }}
-        </p>
+        {% for field in [form.name, form.username, form.email, form.password, form.password2] %}
+            <div class="field">
+                {{ field.label }}
+                {% if field.type == 'PasswordField' %}
+                    {{ field(class="form-control", autocomplete="new-password") }}
+                {% else %}
+                    {{ field(class="form-control") }}
+                {% endif %}
+                {% for error in field.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}
+        {{ form.submit(class="btn btn-primary") }}
     </form>
-
-    <p>Already have an account? <a href="{{ url_for('authentication.login') }}" class="inline-link">Login here</a></p>
+    <p class="form-footer">Already have an account? <a href="{{ url_for('authentication.login') }}" class="text-link">Log in</a></p>
+</section>
 {% endblock %}
