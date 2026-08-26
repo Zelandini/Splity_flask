@@ -1,140 +1,186 @@
-# Splity - Bill Splitting App
+Splity
 
-A Flask-based web application for splitting bills and managing shared expenses among friends and groups.
+Splity is a full-stack expense-sharing application for creating groups, recording shared expenses, calculating balances and simplifying repayments between friends.
 
-## 💭 Why I Built This
+Live application: https://3-24-244-206.sslip.io
 
-I've been familiar with Python for quite some time, having created scripts and small tools during my university studies. However, I never truly understood how software is **actually built**—the architecture, patterns, and principles that underlie it.
+Why I Built It
 
-After taking a software methodologies course (CS235) where we relied heavily on AI, I challenged myself: **build something real, from scratch, without the AI crutch.** 
+While travelling with friends in 2025, I became frustrated by bill-splitting apps that placed useful features behind a paywall. I built Splity both to solve that problem and to strengthen my understanding of full-stack development, software architecture, testing and deployment.
 
-Meanwhile, my friends and I travelled a lot in 2025, constantly frustrated by bill-splitting apps with paywalled features. So I decided to solve both problems: learn proper software engineering **and** build a tool we actually need.
+Features
 
-## 🎓 What I Learned
+Sign in securely with Google OAuth
 
-Building Splity without AI taught me that **understanding beats copying**. Debugging, refactoring, and watching tests pass—that's where real learning happens. This project significantly accelerated my learning progress in web development.
+Create groups in a selected currency
 
-## 🏗️ In Development
+Join groups using a six-character invitation code
 
-- Implementing **Postgres** as Database
-- Deploying app in **AWS**
-- Integrating **React** as the Frontend (https://github.com/Zelandini/Splity_flask-2.0)
+Record which member paid for an expense
 
-## 🎯 What This Demonstrates
+Split expenses equally or assign custom amounts
 
-- **Clean Architecture**: Strict separation of concerns across layers
-- **Design Patterns**: Repository, Service Layer, Factory, Blueprint patterns
-- **Domain-Driven Design**: Rich domain models with proper encapsulation
-- **Test-Driven Development**: Comprehensive test coverage with pytest
-- **SOLID Principles**: Single responsibility, dependency inversion
-- **Secure Authentication**: Password hashing, CSRF protection, session management
+Edit and delete bills with ownership and membership checks
 
-## ✨ Features
+Calculate each member's net balance
 
-- **User Authentication**: Secure registration, login, password hashing
-- **Group Management**: Create groups, invite members with codes, manage memberships
-- **Bill Splitting**: Create bills, split expenses equally, track who owes whom
-- **Settlement Calculation**: Smart algorithm to minimise the number of transactions
-- **Multi-Currency Support**: 140+ currencies via external API
-- **Dashboard**: View all groups, bills, and balances at a glance
+Simplify debts into a smaller set of repayments
 
-## 🏗️ Architecture
+Record repayments and let the receiving member confirm them
 
-```
-┌─────────────────────────────────────┐
-│   Presentation Layer                │  Routes, Templates, Forms
-├─────────────────────────────────────┤
-│   Service Layer                     │  Business Logic, Validation
-├─────────────────────────────────────┤
-│   Domain Layer                      │  Entities (User, Group, Bill)
-├─────────────────────────────────────┤
-│   Data Access Layer                 │  Repository Pattern
-├─────────────────────────────────────┤
-│   Persistence Layer                 │  SQLAlchemy ORM, Database
-└─────────────────────────────────────┘
-```
+Manage group details and membership safely
 
-**Key principles:**
-- Each layer has a single, well-defined responsibility
-- Business logic is independent of database and UI
-- Domain models know nothing about persistence
-- Easy to test, maintain, and extend
+Use a responsive redesigned interface on desktop and mobile
 
+Architecture
 
-## 🚀 Getting Started
+Splity uses an application-factory structure with Flask Blueprints and separates responsibilities across several layers:
 
-### Installation
+Presentation: Flask routes, Jinja2 templates, forms and JavaScript
 
-```bash
-# Clone and setup
-git clone https://github.com/yourusername/splity-flask.git
-cd splity-flask
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+Service: validation, bill-splitting rules and settlement calculations
 
-# Install dependencies
-pip install -r requirements.txt
+Domain: users, groups, bills and repayment models
 
-# Run the app
+Data access: repository classes and SQLAlchemy ORM
+
+Persistence: SQLite in the current deployment, configurable through DATABASE_URL
+
+This structure keeps business rules separate from web routes and database operations, making the application easier to test and extend.
+
+Technology Stack
+
+Backend: Python, Flask, Flask-Login, Flask-WTF and Authlib
+
+Database: SQLAlchemy and SQLite
+
+Frontend: Jinja2, HTML, CSS and JavaScript
+
+Authentication: Google OAuth 2.0 / OpenID Connect
+
+Testing: pytest and pytest-cov
+
+Deployment: AWS Lightsail, Ubuntu, Gunicorn and Nginx
+
+Security and networking: HTTPS with Let's Encrypt, CSRF protection and secure server-side configuration
+
+Local Setup
+
+1. Clone the redesign branch
+
+git clone --branch redesign --single-branch https://github.com/Zelandini/Splity_flask.git
+cd Splity_flask
+
+2. Create and activate a virtual environment
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+On Windows PowerShell, activate it with:
+
+.venv\Scripts\Activate.ps1
+
+3. Install dependencies
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+4. Configure environment variables
+
+Splity reads the following values from the environment:
+
+Variable
+
+Purpose
+
+Required locally?
+
+SECRET_KEY
+
+Signs Flask sessions and CSRF tokens
+
+Recommended
+
+DATABASE_URL
+
+Overrides the default SQLite database
+
+No
+
+GOOGLE_CLIENT_ID
+
+Identifies the Google OAuth application
+
+Required for Google login
+
+GOOGLE_CLIENT_SECRET
+
+Authenticates the Google OAuth application
+
+Required for Google login
+
+Never commit secrets or local environment files to Git.
+
+Without Google credentials, the application retains its local authentication fallback for development and testing. The default database is created automatically as splity.db in Flask's instance directory.
+
+5. Run the application
+
 python wsgi.py
-```
 
-The app will create a local SQLite database at `splity.db` on first run (or use
-`DATABASE_URL` to point at another database). Set `SECRET_KEY` in your shell if
-you want a custom session secret.
+Open http://127.0.0.1:5001.
 
-Visit **http://localhost:5000**
+Testing
 
-### Quick Start
-1. Register an account
-2. Create a group (e.g., "Weekend Trip")
-3. Share the 6-character invite code with friends
-4. Create bills and split expenses
-5. View who owes whom
+Run the complete test suite:
 
-## 🧪 Testing
+python -m pytest -v
 
-```bash
-python -m pytest                          # Run all tests
-python -m pytest -v                       # Verbose output
-```
+Generate a coverage report:
 
-To run coverage locally, install `pytest-cov` and then run:
-
-```bash
 python -m pytest --cov=Splity tests/
-```
 
-**Test coverage:**
-- User authentication and authorisation
-- Group creation and management
-- Bill splitting and calculations
-- Settlement algorithms
-- Access control and security
+The suite covers domain models, authentication, group management, access control, equal and custom bill splits, settlement calculations, repayments and currency-service fallback behaviour.
 
-## 🛠️ Technologies
+Production Deployment
 
-- **Flask 3.0+**: Web framework
-- **SQLAlchemy**: ORM and database
-- **Flask-Login**: Session management
-- **Flask-WTF**: Forms and CSRF protection
-- **Werkzeug**: Password hashing (PBKDF2-SHA256)
-- **pytest**: Testing framework
-- **Currency API**: https://github.com/fawazahmed0/exchange-api
+The redesign is deployed on an Ubuntu AWS Lightsail instance using:
 
-## 🔒 Security
+Gunicorn with a Unix socket for the Flask application
 
-- Password hashing with PBKDF2-SHA256
-- CSRF protection on all forms
-- SQL injection prevention via ORM
-- Session-based authentication
-- Server-side input validation
+Nginx as the public reverse proxy
 
+A Lightsail static IPv4 address
 
-## 📝 License
+HTTPS certificates issued by Let's Encrypt
 
-MIT License - Open source and available for educational purposes.
+systemd for automatic startup and restart
 
----
+Protected environment variables stored outside the repository
 
-**Note**: This is a learning project demonstrating software engineering principles. Not intended for production use without additional hardening and infrastructure.
+The current production deployment uses SQLite and one Gunicorn worker to suit the application's small user base and lightweight Lightsail instance.
+
+Planned Improvements
+
+Move production persistence from SQLite to PostgreSQL as usage grows
+
+Add automated deployment and database-backup workflows
+
+Continue improving accessibility and mobile usability
+
+Security
+
+Google OAuth avoids storing Google passwords
+
+CSRF protection is enabled for forms
+
+SQLAlchemy provides parameterised database access
+
+Session cookies use HttpOnly and SameSite=Lax
+
+Credentials and the production database remain outside Git
+
+Nginx redirects public traffic to HTTPS
+
+Licence
+
+MIT License. This is an educational portfolio project and should receive further infrastructure and security hardening before supporting a large public user base.
