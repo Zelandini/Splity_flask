@@ -9,7 +9,7 @@
 <div class="summary-grid">
  <article class="metric-card"><span>Total group spend</span><strong>{{ total_group_spending }} <small>{{ group.currency }}</small></strong></article>
  <article class="metric-card {% if user_net_balance<0 %}metric-card--negative{% else %}metric-card--positive{% endif %}"><span>Your balance</span><strong>{{ user_net_balance }} <small>{{ group.currency }}</small></strong><small>{% if user_net_balance<0 %}You owe{% elif user_net_balance>0 %}You are owed{% else %}All settled{% endif %}</small></article>
- <button class="share-card copy-container" type="button" onclick="copyToClipboard('{{ group.invite_code }}',this)"><span>Invite friends</span><strong>{{ group.invite_code }}</strong><small class="copy-hint">Tap to copy code</small></button>
+ <button class="share-card copy-container" type="button" onclick="copyToClipboard('{{ group.invite_code }}',this)"><span>Invite code</span><strong>{{ group.invite_code }}</strong><small class="copy-hint">Tap to copy code</small></button>
 </div>
 <div class="content-grid">
  <section class="content-card">
