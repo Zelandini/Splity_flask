@@ -1,7 +1,7 @@
 # /Splity_flask/Splity/adapters/repository.py
 
 from Splity.adapters.database import db
-from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM
+from Splity.adapters.orm import UserORM, BillORM, BillParticipantORM, GroupORM, RepaymentORM
 from Splity.domainmodel.models import User, Bill, BillParticipant, Group
 
 
@@ -13,7 +13,8 @@ class UserRepository:
             name=user.name,
             username=user.username,
             email=user.email,
-            password=user.password
+            password=user.password,
+            google_sub=user.google_sub
         )
         db.session.add(user_orm)
         db.session.commit()
@@ -30,6 +31,16 @@ class UserRepository:
             return self._to_domain(user_orm)
         return None
 
+    def get_by_google_sub(self, google_sub: str):
+        user_orm = UserORM.query.filter_by(google_sub=google_sub).first()
+        return self._to_domain(user_orm) if user_orm else None
+
+    def update_profile(self, user_id: int, name: str, username: str):
+        user_orm = db.session.get(UserORM, user_id)
+        user_orm.name = name
+        user_orm.username = username
+        db.session.commit()
+
     def get_by_username(self, username: str):
         user_orm = UserORM.query.filter_by(username=username).first()
         return self._to_domain(user_orm) if user_orm else None
@@ -45,7 +56,8 @@ class UserRepository:
             name=user_orm.name,
             username=user_orm.username,
             email=user_orm.email,
-            password=user_orm.password
+            password=user_orm.password,
+            google_sub=user_orm.google_sub
         )
         # Bridge the gap: Convert ORM groups to Domain groups
         for group_orm in user_orm.groups:
@@ -66,6 +78,7 @@ class BillRepository:
     def create(self, bill: Bill):
         bill_orm = BillORM(
             user_id=bill.user_id,
+            created_by_id=bill.created_by_id,
             description=bill.description,
             date=bill.date,
             amount=bill.amount,
@@ -81,6 +94,16 @@ class BillRepository:
         if bill_orm:
             return self._to_domain(bill_orm)
         return None
+
+    def update(self, bill_id: int, payer_id: int, description: str, amount: float):
+        bill_orm = db.session.get(BillORM, bill_id)
+        if not bill_orm:
+            return False
+        bill_orm.user_id = payer_id
+        bill_orm.description = description
+        bill_orm.amount = amount
+        db.session.commit()
+        return True
 
     def get_bills_by_user(self, user_id: int):
         """Get all bills where user is a participant"""
@@ -123,7 +146,9 @@ class BillRepository:
             user_id=bill_orm.user_id,
             description=bill_orm.description,
             created_date=bill_orm.date,
-            amount=bill_orm.amount
+            amount=bill_orm.amount,
+            group_id=bill_orm.group_id,
+            created_by_id=bill_orm.created_by_id
         )
 
 
@@ -141,6 +166,12 @@ class BillParticipantRepository:
         db.session.add(participant)
         db.session.commit()
         return participant.id
+
+    def replace_participants(self, bill_id: int, shares: dict):
+        BillParticipantORM.query.filter_by(bill_id=bill_id).delete()
+        for user_id, amount in shares.items():
+            db.session.add(BillParticipantORM(bill_id=bill_id, user_id=user_id, amount_owed=amount))
+        db.session.commit()
 
     def get_participants_for_bill(self, bill_id: int):
         """Get all participants for a bill"""
@@ -173,8 +204,7 @@ class BillParticipantRepository:
             participant_id=participant_orm.id,
             bill_id=participant_orm.bill_id,
             user_id=participant_orm.user_id,
-            amount_owed=participant_orm.amount_owed,
-            has_paid=participant_orm.has_paid
+            amount_owed=participant_orm.amount_owed
         )
 
 
@@ -304,3 +334,30 @@ class GroupRepository:
             creator_id=group_orm.creator_id,
             invite_code=group_orm.invite_code   # FIX: Pass the code from DB
         )
+
+
+class RepaymentRepository:
+    def create(self, group_id: int, payer_id: int, payee_id: int, amount: float):
+        repayment = RepaymentORM(group_id=group_id, payer_id=payer_id, payee_id=payee_id, amount=amount, status="pending")
+        db.session.add(repayment)
+        db.session.commit()
+        return repayment.id
+
+    def get_by_id(self, repayment_id: int):
+        return db.session.get(RepaymentORM, repayment_id)
+
+    def get_for_group(self, group_id: int):
+        return RepaymentORM.query.filter_by(group_id=group_id).order_by(RepaymentORM.created_at.desc()).all()
+
+    def get_confirmed_for_group(self, group_id: int):
+        return RepaymentORM.query.filter_by(group_id=group_id, status="confirmed").all()
+
+    def confirm(self, repayment_id: int):
+        from datetime import datetime, timezone
+        repayment = db.session.get(RepaymentORM, repayment_id)
+        if not repayment:
+            return False
+        repayment.status = "confirmed"
+        repayment.confirmed_at = datetime.now(timezone.utc)
+        db.session.commit()
+        return True
