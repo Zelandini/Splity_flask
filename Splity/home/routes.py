@@ -30,7 +30,7 @@ def join_group():
     if form.validate_on_submit():
         try:
             group=groups_services.join_group(form.invite_code.data,current_user.id)
-            flash(f"You joined '{group.name}'.","success")
+            flash(f"Successfully joined '{group.name}'.","success")
             return redirect(url_for("home.group_details",group_id=group.id))
         except groups_services.GroupServiceException as error: flash(str(error),"danger")
     return render_template("group/join_group.html",form=form)
