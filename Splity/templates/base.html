@@ -3,56 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %} Splity {% endblock %}</title>
+    <meta name="theme-color" content="#5b5bd6">
+    <title>{% block title %}Splity{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
-    <nav>
-        <a class="nav-brand" href="{{ url_for('home.home') }}">Splity.</a>
-        <div class="nav-links">
-            {% if current_user.is_authenticated %}
-                <span class="nav-user">Logged in as: <strong>{{ current_user.username }}</strong></span>
-                <a href="{{ url_for('authentication.logout') }}">Logout</a>
-            {% else %}
-                <a href="{{ url_for('authentication.login') }}">Login</a>
-                <a href="{{ url_for('authentication.register') }}">Register</a>
-            {% endif %}
-        </div>
-    </nav>
+    <header class="app-header">
+        <nav class="nav-shell" aria-label="Primary navigation">
+            <a class="brand" href="{{ url_for('home.home') }}" aria-label="Splity dashboard">
+                <span class="brand-mark">S</span>
+                <span>Splity</span>
+            </a>
+            <div class="nav-actions">
+                {% if current_user.is_authenticated %}
+                    <span class="user-greeting">Hi, {{ current_user.name }}</span>
+                    <a class="nav-link" href="{{ url_for('home.home') }}">Dashboard</a>
+                    <a class="nav-link nav-link--muted" href="{{ url_for('authentication.logout') }}">Log out</a>
+                {% else %}
+                    <a class="nav-link" href="{{ url_for('authentication.login') }}">Log in</a>
+                    <a class="btn btn-primary btn-small" href="{{ url_for('authentication.register') }}">Get started</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
 
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}\
-            {% if messages %}\
-                {% for category, message in messages %}\
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}\
-            {% endif %}\
+    <main class="page-shell">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-stack" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endwith %}
 
         {% block content %}{% endblock %}
-    </div>
+    </main>
+
+    <script>
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(function () {
+                const hint = element.querySelector('.copy-hint');
+                const originalText = hint.innerText;
+                hint.innerText = 'Copied!';
+                element.classList.add('copied');
+                setTimeout(function () {
+                    hint.innerText = originalText;
+                    element.classList.remove('copied');
+                }, 2000);
+            }).catch(function () {
+                const hint = element.querySelector('.copy-hint');
+                hint.innerText = 'Copy failed';
+            });
+        }
+    </script>
 </body>
-<script>
-function copyToClipboard(text, element) {
-    // 1. Copy the text to the clipboard
-    navigator.clipboard.writeText(text).then(function() {
-
-        // 2. Visual Feedback: Change text and styling
-        const hint = element.querySelector('.copy-hint');
-        const originalText = hint.innerText;
-
-        hint.innerText = "Copied!";
-        element.classList.add('copied');
-
-        // 3. Reset after 2 seconds
-        setTimeout(function() {
-            hint.innerText = originalText;
-            element.classList.remove('copied');
-        }, 2000);
-
-    }, function(err) {
-        console.error('Could not copy text: ', err);
-    });
-}
-</script>
 </html>
