@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, request
+from werkzeug.datastructures import MultiDict
 from flask_login import login_required, current_user
 from Splity.forms.forms import CreateBillForm, RepaymentForm
 from Splity.services import bill_services, groups_services
@@ -15,6 +16,21 @@ def _prepare_form(form,group_id):
 def _custom_amounts(form):
     return {member_id:request.form.get(f"custom_amount_{member_id}") for member_id in form.names.data}
 
+def _expense_form(group_id):
+    """Build the form and normalise submissions from the previous UI."""
+    members=groups_services.get_group_members(group_id)
+    if request.method=="POST":
+        data=MultiDict(request.form)
+        if not data.get("payer_id"): data.setlist("payer_id",[str(current_user.id)])
+        if not data.get("split_mode"): data.setlist("split_mode",["equal"])
+        labels={f"{member.name} | @{member.username}":str(member.id) for member in members}
+        data.setlist("names",[labels.get(value,value) for value in data.getlist("names")])
+        form=CreateBillForm(data)
+    else:
+        form=CreateBillForm()
+    _prepare_form(form,group_id)
+    return form,members
+
 @bills_blueprint.route("/group/<int:group_id>/create_bill",methods=["GET","POST"],strict_slashes=False)
 @login_required
 def create_bill(group_id):
@@ -22,8 +38,7 @@ def create_bill(group_id):
         group,_=groups_services.get_group_details(group_id,current_user.id)
     except groups_services.GroupServiceException as error:
         flash(str(error),"danger"); return redirect(url_for("home.home"))
-    form=CreateBillForm()
-    members=_prepare_form(form,group_id)
+    form,members=_expense_form(group_id)
     if request.method=="GET":
         form.payer_id.data=current_user.id
         form.names.data=[member.id for member in members]
