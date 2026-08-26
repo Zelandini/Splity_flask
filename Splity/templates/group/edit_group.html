@@ -1,71 +1,57 @@
 {% extends 'base.html' %}
 
-{% block title %}Splity - Edit Group{% endblock %}
+{% block title %}Group settings · Splity{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="breadcrumb"><a href="{{ url_for('home.home') }}">Dashboard</a><span>›</span><a href="{{ url_for('home.group_details', group_id=group.id) }}">{{ group.name }}</a><span>›</span><span>Settings</span></div>
 
-    <h1>Edit Group</h1>
-    <p>Update your group information and manage members.</p>
+    <section class="form-shell">
+        <div class="form-heading">
+            <span class="eyebrow">Group settings</span>
+            <h1>Edit {{ group.name }}</h1>
+            <p>Update the group information and manage its members.</p>
+        </div>
 
-    <form method="post" novalidate>
-        {{ form.hidden_tag() }}
+        <form method="post" novalidate class="stack-form">
+            {{ form.hidden_tag() }}
+            <div class="field">
+                {{ form.name.label }}
+                {{ form.name(class="form-control", size=32) }}
+                {% for error in form.name.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="field">
+                {{ form.description.label }}
+                {{ form.description(class="form-control", rows=3) }}
+                {% for error in form.description.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="button-row">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
 
-        <p>
-            {{ form.name.label }}
-            {{ form.name(class="form-control", size=32) }}
-            {% for error in form.name.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>
-            {{ form.description.label }}
-            {{ form.description(class="form-control", rows=3) }}
-            {% for error in form.description.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>{{ form.submit(class="btn btn-primary") }}</p>
-    </form>
-
-    <hr>
-
-    <h2>Group Members</h2>
-    {% if members %}
-        <ul>
-        {% for member in members %}
-            <li>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>{{ member.name }}</strong> (@{{ member.username }})
+    <section class="content-card members-card">
+        <div class="section-heading section-heading--compact">
+            <div><span class="eyebrow">People</span><h2>Group members</h2></div>
+            {% if members %}<span class="count-pill">{{ members|length }}</span>{% endif %}
+        </div>
+        {% if members %}
+            <div class="member-list">
+                {% for member in members %}
+                    <div class="member-row">
+                        <div class="transaction-avatar">{{ member.name[:1]|upper }}</div>
+                        <div class="member-row__body"><strong>{{ member.name }}</strong><span>@{{ member.username }}</span></div>
                         {% if member.id == group.creator_id %}
-                            <span style="color: green;">[Creator]</span>
+                            <span class="role-pill">Owner</span>
+                        {% else %}
+                            <a href="{{ url_for('home.remove_user', group_id=group.id, user_id=member.id) }}" class="text-link text-link--danger">Remove</a>
                         {% endif %}
                     </div>
-                    {% if member.id != group.creator_id %}
-                        <a href="{{ url_for('home.remove_user', group_id=group.id, user_id=member.id) }}" class="btn btn-secondary">Remove</a>
-                    {% endif %}
-                </div>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No members in this group yet.</p>
-    {% endif %}
-
-    <div class="actions">
-        <a href="{{ url_for('home.group_details', group_id=group.id) }}" class="btn btn-secondary">Back to Group</a>
-    </div>
-</div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="muted">No members are in this group yet.</p>
+        {% endif %}
+    </section>
 {% endblock %}
