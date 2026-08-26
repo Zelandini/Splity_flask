@@ -45,7 +45,10 @@
                         {% if member.id == group.creator_id %}
                             <span class="role-pill">Owner</span>
                         {% else %}
-                            <a href="{{ url_for('home.remove_user', group_id=group.id, user_id=member.id) }}" class="text-link text-link--danger">Remove</a>
+                            <form method="post" action="{{ url_for('home.remove_user', group_id=group.id, user_id=member.id) }}" onsubmit="return confirm('Remove {{ member.name }}? This is allowed only when their confirmed balance is zero.')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="text-button text-button--danger">Remove</button>
+                            </form>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -55,3 +58,11 @@
         {% endif %}
     </section>
 {% endblock %}
+
+<section class="danger-zone">
+    <div><strong>Delete group</strong><p>This permanently removes the group. Ownership cannot be transferred.</p></div>
+    <form method="post" action="{{ url_for('home.delete_group', group_id=group.id) }}" onsubmit="return confirm('Permanently delete this group? This cannot be undone.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger">Delete group</button>
+    </form>
+</section>
