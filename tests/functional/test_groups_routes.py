@@ -519,7 +519,7 @@ def test_leave_group_non_creator(authenticated_client, app):
     authenticated_client.post('/join_group', data={"invite_code": group.invite_code}, follow_redirects=True)
 
     response = authenticated_client.post(f'/group/{group.id}/leave', follow_redirects=True)
-    assert "successfully leave" in response.get_data(as_text=True).lower()
+    assert "you left" in response.get_data(as_text=True).lower()
 
 
 def test_delete_group_requires_creator(authenticated_client):
@@ -546,4 +546,4 @@ def test_delete_group_requires_creator(authenticated_client):
     }, follow_redirects=True)
 
     response = authenticated_client.post(f'/group/{group.id}/delete', follow_redirects=True)
-    assert "not authorised" in response.get_data(as_text=True).lower()
+    assert "not in group" in response.get_data(as_text=True).lower()
